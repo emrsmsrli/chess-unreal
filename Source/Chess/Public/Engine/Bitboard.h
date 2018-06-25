@@ -21,6 +21,7 @@ namespace engine {
         void clr_sq(uint32 sq);
         uint32 pop();
         uint32 count() const;
+        bool is_empty() const;
 
         std::string str() const;
     };

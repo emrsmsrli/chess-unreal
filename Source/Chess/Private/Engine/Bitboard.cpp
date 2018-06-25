@@ -44,6 +44,10 @@ uint32 engine::bitboard::count() const {
     return i;
 }
 
+bool engine::bitboard::is_empty() const {
+    return board_ == 0;
+}
+
 std::string engine::bitboard::str() const {
     std::ostringstream stream;
     const uint64 s = 1L;
