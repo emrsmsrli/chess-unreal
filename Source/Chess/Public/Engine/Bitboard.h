@@ -5,7 +5,6 @@
 
 namespace engine {
     class CHESS_API bitboard {
-        const uint64 shift_ = 1ULL;
         const uint32 btable_[64] = {
             63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13,
             11, 53, 19, 34, 61, 29, 2, 51, 21, 43, 45, 10,
@@ -19,9 +18,14 @@ namespace engine {
     public:
         bitboard();
         void set_sq(uint32 sq);
+        void clr_sq(uint32 sq);
         uint32 pop();
         uint32 count() const;
 
         std::string str() const;
     };
+
+    namespace bitmask {
+        void init();
+    }
 }

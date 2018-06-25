@@ -3,12 +3,30 @@
 #include "ChessEngine.h"
 #include "Transition.h"
 
+namespace engine {
+    namespace bitmask {
+        uint64 set_mask[64];
+        uint64 clr_mask[64];
+    }
+}
+
+void engine::bitmask::init() {
+    for(uint32 i = 0; i < 64; ++i) {
+        set_mask[i] = 1ULL << i;
+        clr_mask[i] = ~set_mask[i];
+    }
+}
+
 engine::bitboard::bitboard() {
     board_ = 0;
 }
 
 void engine::bitboard::set_sq(const uint32 sq) {
-    board_ |= shift_ << sq;
+    board_ |= bitmask::set_mask[sq];
+}
+
+void engine::bitboard::clr_sq(const uint32 sq) {
+    board_ &= bitmask::clr_mask[sq];
 }
 
 uint32 engine::bitboard::pop() {
@@ -30,8 +48,8 @@ std::string engine::bitboard::str() const {
     std::ostringstream stream;
     const uint64 s = 1L;
 
-    for(uint32 rank = rank::rank_8; rank >= rank::rank_1; --rank) {
-        for(uint32 file = file::file_a; file <= file::file_h; ++file) {
+    for(int rank = rank::rank_8; rank >= rank::rank_1; --rank) {
+        for(int file = file::file_a; file <= file::file_h; ++file) {
             const auto sq = transition::file_rank_sq120(file, rank);
             const auto sq64 = transition::sq64(sq);
 
