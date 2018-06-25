@@ -2,23 +2,22 @@
 
 #include <vector>
 #include "Bitboard.h"
-#include "CastlingPermission.h"
 #include "Undo.h"
 #include "CoreMinimal.h"
 
 namespace engine {
     class CHESS_API board {
-        uint32 pieces_[N_BOARD_SQUARES_X];
+        uint32 b_[N_BOARD_SQUARES_X];
         bitboard pawns_[3];
         square king_sq_[2];
         square en_passant_sq_;
 
         uint32 piece_count_[N_PIECES];
-        uint32 n_big_pieces_[3]; // anything but pawn
-        uint32 n_major_pieces_[3]; // rook queen
-        uint32 n_minor_pieces_[3]; // bishop knight
+        uint32 n_big_pieces_[3];    // anything but pawn
+        uint32 n_major_pieces_[3];  // rook queen
+        uint32 n_minor_pieces_[3];  // bishop knight
 
-        uint32 cast_perm_; //castling_permission cast_perm_;
+        uint32 cast_perm_;
 
         side side_;
         uint32 fifty_move_counter_;
@@ -31,9 +30,7 @@ namespace engine {
         square piece_list_[N_PIECES][10];
 
     public:
-        board();
-        ~board();
-
+        uint64 generate_pos_key();
         square king_of(side side);
     };
 }
