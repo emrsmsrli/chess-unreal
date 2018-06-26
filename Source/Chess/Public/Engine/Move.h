@@ -42,17 +42,7 @@ namespace engine {
             return &builder;
         }
 
-        // todo fix these functions returning ints instead of strs, use macros if possible.
-        friend std::ostream& operator<<(std::ostream& stream, move& m) {
-            stream << "move - from: " << m.from() <<
-                " to: " << m.to() <<
-                " captured: " << m.captured_piece() <<
-                " promoted: " << m.promoted_piece() <<
-                " isep: " << m.is_enpassant() <<
-                " ispawnstart: " << m.is_pawnstart() <<
-                " iscast: " << m.is_castling() << '\n';
-            return stream;
-        }
+        std::string str() const;
 
     private:
         uint32 get(uint32 shift, uint32 and) const;

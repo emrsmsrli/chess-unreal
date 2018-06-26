@@ -1,4 +1,5 @@
 #include "Move.h"
+#include <sstream>
 
 namespace {
     const uint32 mask_move_from = 0x7F;
@@ -91,4 +92,16 @@ bool engine::move::is_pawnstart() const {
 
 bool engine::move::is_castling() const {
     return get(shift_move_is_cast, mask_move_is_cast);
+}
+
+std::string engine::move::str() const {
+    std::ostringstream stream;
+    stream << "move - from: " << from() <<
+        " to: " << to() <<
+        " captured: " << captured_piece() <<
+        " promoted: " << promoted_piece() <<
+        " isep: " << is_enpassant() <<
+        " ispawnstart: " << is_pawnstart() <<
+        " iscast: " << is_castling() << '\n';
+    return stream.str();
 }
