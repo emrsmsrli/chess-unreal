@@ -14,8 +14,8 @@ void engine::transition::init() {
     }
 
     uint32 sq64 = 0;
-    for(uint32 r = engine::rank::rank_1; r < engine::rank::rank_none; ++r) {
-        for(uint32 f = engine::file::file_a; f < engine::file::file_none; ++f) {
+    for(uint32 r = rank::rank_1; r < rank::rank_none; ++r) {
+        for(uint32 f = file::file_a; f < file::file_none; ++f) {
             const auto sq = fr_sq120(f, r);
             sq64_sq120[sq64] = sq;
             sq120_sq64[sq] = sq64;
