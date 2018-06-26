@@ -189,13 +189,20 @@ std::string engine::board::str() const {
     std::ostringstream stream;
 
     for(int32 rank = rank::rank_8; rank >= rank::rank_1; rank--) {
-        stream << rank + 1 << "   ";
+        stream << representation::ranks[rank] << " | ";
         for(int32 file = file::file_a; file <= file::file_h; file++) {
             const auto piece = b_[transition::fr_sq120(file, rank)];
             stream << std::setw(3) << std::left << representation::pieces[piece];
         }
         stream << '\n';
     }
+    
+    stream << "\n  ";
+    for(int32 file = file::file_a; file <= file::file_h; file++)
+        stream << "---";
+    stream << "\n    ";
+    for(int32 file = file::file_a; file <= file::file_h; file++)
+        stream << std::setw(3) << std::left << representation::files[file];
 
     return stream.str();
 }
