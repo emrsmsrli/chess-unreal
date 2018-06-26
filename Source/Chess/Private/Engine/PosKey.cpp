@@ -1,4 +1,5 @@
 #include "PosKey.h"
+#include "ChessEngine.h"
 #include <random>
 #include <functional>
 #include <chrono>
@@ -6,7 +7,7 @@
 
 namespace engine {
     namespace poskey {
-        uint64 piece_keys[13][120];
+        uint64 piece_keys[N_PIECES][N_BOARD_SQUARES_X];
         uint64 side_key;
         uint64 castle_keys[16];
     }
@@ -21,8 +22,8 @@ auto create_uniform_random() {
 void engine::poskey::init() {
     auto rand = create_uniform_random();
 
-    for(uint32 i = 0; i < 13; ++i)
-        for(uint32 j = 0; j < 120; ++j)
+    for(uint32 i = 0; i < N_PIECES; ++i)
+        for(uint32 j = 0; j < N_BOARD_SQUARES_X; ++j)
             piece_keys[i][j] = rand();
 
     side_key = rand();

@@ -5,13 +5,13 @@
 
 namespace engine {
     namespace bitmask {
-        uint64 set_mask[64];
-        uint64 clr_mask[64];
+        uint64 set_mask[N_BOARD_SQUARES];
+        uint64 clr_mask[N_BOARD_SQUARES];
     }
 }
 
 void engine::bitmask::init() {
-    for(uint32 i = 0; i < 64; ++i) {
+    for(uint32 i = 0; i < N_BOARD_SQUARES; ++i) {
         set_mask[i] = 1ULL << i;
         clr_mask[i] = ~set_mask[i];
     }
