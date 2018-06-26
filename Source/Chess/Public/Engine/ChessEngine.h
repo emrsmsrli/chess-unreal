@@ -1,10 +1,13 @@
 #pragma once
 
+#include <string>
+
 #define N_BOARD_SQUARES_X	120
 #define N_BOARD_SQUARES		64
 #define N_PIECES			13
 //#define MAX_GAME_MOVES		2048
 
+// todo move these to another file. this file should only contain engine interface functions
 namespace engine {
     enum piece_types {
         empty, wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk
@@ -34,7 +37,7 @@ namespace engine {
         a5 = 61, b5, c5, d5, e5, f5, g5, h5,
         a6 = 71, b6, c6, d6, e6, f6, g6, h6,
         a7 = 81, b7, c7, d7, e7, f7, g7, h7,
-        a8 = 91, b8, c8, d8, e8, f8, g8, h8, no_sq
+        a8 = 91, b8, c8, d8, e8, f8, g8, h8, no_sq, offboard
     };
 
     /*struct piece {
@@ -42,4 +45,5 @@ namespace engine {
     };*/
 
     void init();
+    std::string &start_fen();
 }

@@ -30,6 +30,11 @@ namespace engine {
         square piece_list_[N_PIECES][10];
 
     public:
+        board();
+
+        void reset();
+        bool set(const std::string &fen);
+
         uint64 generate_pos_key();
         square king_of(side side);
     };
