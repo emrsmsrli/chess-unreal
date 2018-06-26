@@ -3,6 +3,7 @@
 #include <string>
 #include "ChessEngine.h"
 #include "CoreMinimal.h"
+#include <functional>
 
 namespace engine {
     class CHESS_API bitboard {
@@ -18,6 +19,7 @@ namespace engine {
 
     public:
         bitboard();
+        
         void set_sq(uint32 sq);
         void clr_sq(uint32 sq);
         uint32 pop();
@@ -25,6 +27,8 @@ namespace engine {
         bool is_empty() const;
 
         std::string str() const;
+        uint64 operator*() const;
+        bitboard &operator=(uint64 b);
     };
 
     namespace bitmask {
