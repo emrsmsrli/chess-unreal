@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include "ChessEngine.h"
 #include "CoreMinimal.h"
 #include <functional>
+#include "Defs.h"
 
 namespace engine {
     class CHESS_API bitboard {

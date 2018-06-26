@@ -1,5 +1,5 @@
 #include "Transition.h"
-#include "ChessEngine.h"
+#include "Defs.h"
 
 namespace engine {
     namespace transition {

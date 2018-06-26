@@ -4,6 +4,7 @@
 #include "Bitboard.h"
 #include "Undo.h"
 #include "CoreMinimal.h"
+#include "Defs.h"
 
 namespace engine {
     class CHESS_API board {

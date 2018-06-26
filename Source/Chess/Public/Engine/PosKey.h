@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ChessEngine.h"
 #include "CoreMinimal.h"
+#include "Defs.h"
 
 namespace engine {
     namespace poskey {

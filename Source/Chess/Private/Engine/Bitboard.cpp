@@ -1,6 +1,5 @@
 #include "Bitboard.h"
 #include <sstream>
-#include "ChessEngine.h"
 #include "Transition.h"
 
 namespace engine {

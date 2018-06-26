@@ -31,7 +31,7 @@ engine::move::move_builder* engine::move::move_builder::to(const engine::square 
     return this;
 }
 
-engine::move::move_builder* engine::move::move_builder::captured_piece(const engine::piece_types piece) {
+engine::move::move_builder* engine::move::move_builder::captured_piece(const engine::piece_type piece) {
     m_ |= static_cast<uint64>(piece) << shift_move_captured;
     return this;
 }

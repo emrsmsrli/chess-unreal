@@ -2,6 +2,7 @@
 #include "ChessEngine.h"
 #include "Transition.h"
 #include "PosKey.h"
+#include "Defs.h"
 
 engine::board::board() {
     set(engine::start_fen());
@@ -13,7 +14,7 @@ void engine::board::reset() {
     }
 
     for(uint32 sq = 0; sq < N_BOARD_SQUARES; ++sq) {
-        b_[transition::sq120(sq)] = piece_types::empty;
+        b_[transition::sq120(sq)] = piece_type::empty;
     }
 
     for(uint32 i = 0; i < 3; ++i) {
@@ -43,20 +44,20 @@ bool engine::board::set(const std::string &fen) {
     auto f = fen.c_str();
     for(uint32 rank = rank::rank_8, file = file::file_a; rank >= rank::rank_1 && *f; f++) {
         uint32 count = 1;
-        auto piece = piece_types::empty;
+        auto piece = piece_type::empty;
         switch(*f) {
-			case 'p': piece = piece_types::bp; break;
-			case 'r': piece = piece_types::br; break;
-			case 'n': piece = piece_types::bn; break;
-			case 'b': piece = piece_types::bb; break;
-			case 'q': piece = piece_types::bq; break;
-			case 'k': piece = piece_types::bk; break;
-			case 'P': piece = piece_types::wp; break;
-			case 'R': piece = piece_types::wr; break;
-			case 'N': piece = piece_types::wn; break;
-			case 'B': piece = piece_types::wb; break;
-			case 'Q': piece = piece_types::wq; break;
-			case 'K': piece = piece_types::wk; break;
+			case 'p': piece = piece_type::bp; break;
+			case 'r': piece = piece_type::br; break;
+			case 'n': piece = piece_type::bn; break;
+			case 'b': piece = piece_type::bb; break;
+			case 'q': piece = piece_type::bq; break;
+			case 'k': piece = piece_type::bk; break;
+			case 'P': piece = piece_type::wp; break;
+			case 'R': piece = piece_type::wr; break;
+			case 'N': piece = piece_type::wn; break;
+			case 'B': piece = piece_type::wb; break;
+			case 'Q': piece = piece_type::wq; break;
+			case 'K': piece = piece_type::wk; break;
 
 			case '1': case '2': case '3':
 			case '4': case '5': case '6':
@@ -79,7 +80,7 @@ bool engine::board::set(const std::string &fen) {
         for(uint32 i = 0; i < count; ++i) {
             // todo if bugged use auto sq64 = rank * 8 + file; auto sq120 = transition::sq120(sq64);
             const auto sq120 = transition::fr_sq120(file, rank);;
-            if(piece != piece_types::empty)
+            if(piece != piece_type::empty)
                 b_[sq120] = piece;
 
             file++;
@@ -129,8 +130,8 @@ uint64 engine::board::generate_pos_key() {
     for(uint32 sq = 0; sq < N_BOARD_SQUARES_X; ++sq) {
         const auto p = b_[sq];
         // bug p can be square::offboard?
-        if(p != square::no_sq && p != piece_types::empty) {
-            check(p >= piece_types::wp && p <= piece_types::bk);
+        if(p != square::no_sq && p != piece_type::empty) {
+            check(p >= piece_type::wp && p <= piece_type::bk);
             key ^= poskey::piece_keys[p][sq];
         }
     }
@@ -141,7 +142,7 @@ uint64 engine::board::generate_pos_key() {
 
     if(en_passant_sq_ != square::no_sq) {
         check(en_passant_sq_ >= 0 && en_passant_sq_ < N_BOARD_SQUARES_X);
-        key ^= poskey::piece_keys[piece_types::empty][en_passant_sq_];
+        key ^= poskey::piece_keys[piece_type::empty][en_passant_sq_];
     }
 
     check(cast_perm_ >= 0 && cast_perm_ < 16);

@@ -3,6 +3,7 @@
 #include <ostream>
 #include "CoreMinimal.h"
 #include "ChessEngine.h"
+#include "Defs.h"
 
 namespace engine {
     class CHESS_API move {
@@ -16,7 +17,7 @@ namespace engine {
         public:
             move_builder *from(engine::square sq);
             move_builder *to(engine::square sq);
-            move_builder *captured_piece(engine::piece_types piece);
+            move_builder *captured_piece(engine::piece_type piece);
             move_builder *en_passant();
             move_builder *pawn_start();
             move_builder *castling();
