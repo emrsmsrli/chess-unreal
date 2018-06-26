@@ -204,5 +204,13 @@ std::string engine::board::str() const {
     for(int32 file = file::file_a; file <= file::file_h; file++)
         stream << std::setw(3) << std::left << representation::files[file];
 
+    stream << "\nside: " << representation::sides[side_] << "\nen pas sq: " << en_passant_sq_;
+    stream << "\ncastling: " 
+        << (cast_perm_ & castling_permissions::c_wk ? 'K' : '-')
+        << (cast_perm_ & castling_permissions::c_wq ? 'Q' : '-')
+        << (cast_perm_ & castling_permissions::c_bk ? 'k' : '-')
+        << (cast_perm_ & castling_permissions::c_bq ? 'q' : '-');
+    stream << "\npos key: " << std::hex << pos_key_;
+
     return stream.str();
 }
