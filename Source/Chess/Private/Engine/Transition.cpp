@@ -16,7 +16,7 @@ void engine::transition::init() {
     uint32 sq64 = 0;
     for(uint32 r = engine::rank::rank_1; r < engine::rank::rank_none; ++r) {
         for(uint32 f = engine::file::file_a; f < engine::file::file_none; ++f) {
-            const auto sq = file_rank_sq120(f, r);
+            const auto sq = fr_sq120(f, r);
             sq64_sq120[sq64] = sq;
             sq120_sq64[sq] = sq64;
             sq64++;
@@ -24,8 +24,12 @@ void engine::transition::init() {
     }
 }
 
-uint32 engine::transition::file_rank_sq120(const uint32 file, const uint32 rank) {
+uint32 engine::transition::fr_sq120(const uint32 file, const uint32 rank) {
     return 21 + file + rank * 10;
+}
+
+uint32 engine::transition::fr_sq64(const uint32 file, const uint32 rank) {
+    return sq64(fr_sq120(file, rank));
 }
 
 uint32 engine::transition::sq120(const uint32 sq64) {

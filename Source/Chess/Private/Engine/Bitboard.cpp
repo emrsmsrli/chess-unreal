@@ -54,8 +54,7 @@ std::string engine::bitboard::str() const {
 
     for(int rank = rank::rank_8; rank >= rank::rank_1; --rank) {
         for(int file = file::file_a; file <= file::file_h; ++file) {
-            const auto sq = transition::file_rank_sq120(file, rank);
-            const auto sq64 = transition::sq64(sq);
+            const auto sq64 = transition::fr_sq64(file, rank);
 
             if(s << sq64 & board_)
                 stream << "X";
