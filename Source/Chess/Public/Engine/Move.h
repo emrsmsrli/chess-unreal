@@ -2,7 +2,6 @@
 
 #include <ostream>
 #include "CoreMinimal.h"
-#include "ChessEngine.h"
 #include "Defs.h"
 
 namespace engine {
