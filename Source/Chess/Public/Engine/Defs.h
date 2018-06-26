@@ -36,4 +36,11 @@ namespace engine {
         a7 = 81, b7, c7, d7, e7, f7, g7, h7,
         a8 = 91, b8, c8, d8, e8, f8, g8, h8, no_sq, offboard
     };
+
+    namespace representation {
+        extern char pieces[];
+        extern char files[];
+        extern char ranks[];
+        extern char sides[];
+	}
 }
