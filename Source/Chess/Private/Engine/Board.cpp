@@ -1,13 +1,14 @@
 #include "Board.h"
-#include "ChessEngine.h"
 #include "Transition.h"
 #include "PosKey.h"
 #include "Defs.h"
 #include <sstream>
 #include <iomanip>
 
+#define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
 engine::board::board() {
-    set(engine::start_fen());
+    set(START_FEN);
 }
 
 void engine::board::reset() {
@@ -48,40 +49,40 @@ bool engine::board::set(const std::string& fen) {
         uint32 count = 1;
         auto piece = piece_type::empty;
         switch(*f) {
-        case 'p': 
+        case 'p':
             piece = piece_type::bp;
             break;
-        case 'r': 
+        case 'r':
             piece = piece_type::br;
             break;
-        case 'n': 
+        case 'n':
             piece = piece_type::bn;
             break;
-        case 'b': 
+        case 'b':
             piece = piece_type::bb;
             break;
-        case 'q': 
+        case 'q':
             piece = piece_type::bq;
             break;
-        case 'k': 
+        case 'k':
             piece = piece_type::bk;
             break;
-        case 'P': 
+        case 'P':
             piece = piece_type::wp;
             break;
-        case 'R': 
+        case 'R':
             piece = piece_type::wr;
             break;
-        case 'N': 
+        case 'N':
             piece = piece_type::wn;
             break;
-        case 'B': 
+        case 'B':
             piece = piece_type::wb;
             break;
-        case 'Q': 
+        case 'Q':
             piece = piece_type::wq;
             break;
-        case 'K': 
+        case 'K':
             piece = piece_type::wk;
             break;
 
@@ -108,7 +109,7 @@ bool engine::board::set(const std::string& fen) {
                 b_[sq120] = piece;
         }
 
-        file+= count;
+        file += count;
     }
 
     ensure(*f == 'w' || *f == 'b');
@@ -121,16 +122,16 @@ bool engine::board::set(const std::string& fen) {
             break;
 
         switch(*f) {
-        case 'K': 
+        case 'K':
             cast_perm_ |= castling_permissions::c_wk;
             break;
-        case 'Q': 
+        case 'Q':
             cast_perm_ |= castling_permissions::c_wq;
             break;
-        case 'k': 
+        case 'k':
             cast_perm_ |= castling_permissions::c_bk;
             break;
-        case 'q': 
+        case 'q':
             cast_perm_ |= castling_permissions::c_bq;
             break;
         default:
@@ -161,7 +162,7 @@ uint64 engine::board::generate_pos_key() {
     uint64 key = 0;
     for(uint32 sq = 0; sq < N_BOARD_SQUARES_X; ++sq) {
         const auto p = b_[sq];
-        if(p != square::no_sq &&p != square::offboard && p != piece_type::empty) {
+        if(p != square::no_sq && p != square::offboard && p != piece_type::empty) {
             ensure(p >= piece_type::wp && p <= piece_type::bk);
             key ^= poskey::piece_keys[p][sq];
         }
@@ -196,7 +197,7 @@ std::string engine::board::str() const {
         }
         stream << '\n';
     }
-    
+
     stream << "\n  ";
     for(int32 file = file::file_a; file <= file::file_h; file++)
         stream << "---";
@@ -205,7 +206,7 @@ std::string engine::board::str() const {
         stream << std::setw(3) << std::left << representation::files[file];
 
     stream << "\nside: " << representation::sides[side_] << "\nen pas sq: " << en_passant_sq_;
-    stream << "\ncastling: " 
+    stream << "\ncastling: "
         << (cast_perm_ & castling_permissions::c_wk ? 'K' : '-')
         << (cast_perm_ & castling_permissions::c_wq ? 'Q' : '-')
         << (cast_perm_ & castling_permissions::c_bk ? 'k' : '-')

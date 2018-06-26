@@ -34,7 +34,7 @@ namespace engine {
         board();
 
         void reset();
-        bool set(const std::string &fen);
+        bool set(const std::string& fen);
 
         uint64 generate_pos_key();
         square king_of(side side);

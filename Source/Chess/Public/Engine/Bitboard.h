@@ -19,7 +19,7 @@ namespace engine {
 
     public:
         bitboard();
-        
+
         void set_sq(uint32 sq);
         void clr_sq(uint32 sq);
         uint32 pop();
@@ -28,7 +28,7 @@ namespace engine {
 
         std::string str() const;
         uint64 operator*() const;
-        bitboard &operator=(uint64 b);
+        bitboard& operator=(uint64 b);
     };
 
     namespace bitmask {

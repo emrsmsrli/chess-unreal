@@ -4,7 +4,7 @@
 
 namespace engine {
     namespace bitmask {
-		bitboard set_mask[N_BOARD_SQUARES];
+        bitboard set_mask[N_BOARD_SQUARES];
         bitboard clr_mask[N_BOARD_SQUARES];
     }
 }
@@ -70,7 +70,7 @@ uint64 engine::bitboard::operator*() const {
     return board_;
 }
 
-engine::bitboard &engine::bitboard::operator=(const uint64 b) {
+engine::bitboard& engine::bitboard::operator=(const uint64 b) {
     board_ = b;
     return *this;
 }

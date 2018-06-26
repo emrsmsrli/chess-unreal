@@ -13,7 +13,9 @@ namespace engine {
 }
 
 auto create_uniform_random() {
-	std::mt19937_64 generator { 0/* todo fix here std::chrono::high_resolution_clock::now().time_since_epoch().count() */};
+    std::mt19937_64 generator{
+        static_cast<uint64>(std::chrono::high_resolution_clock::now().time_since_epoch().count())
+    };
     std::uniform_int_distribution<uint64> distribution;
     return std::bind(distribution, generator);
 }
