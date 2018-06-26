@@ -38,5 +38,7 @@ namespace engine {
 
         uint64 generate_pos_key();
         square king_of(side side);
+
+        std::string str() const;
     };
 }

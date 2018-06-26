@@ -3,6 +3,8 @@
 #include "Transition.h"
 #include "PosKey.h"
 #include "Defs.h"
+#include <sstream>
+#include <iomanip>
 
 engine::board::board() {
     set(engine::start_fen());
@@ -38,56 +40,78 @@ void engine::board::reset() {
     pos_key_ = 0;
 }
 
-bool engine::board::set(const std::string &fen) {
+bool engine::board::set(const std::string& fen) {
     reset();
-    
+
     auto f = fen.c_str();
-    for(uint32 rank = rank::rank_8, file = file::file_a; rank >= rank::rank_1 && *f; f++) {
+    for(int32 rank = rank::rank_8, file = file::file_a; rank >= rank::rank_1 && *f; f++) {
         uint32 count = 1;
         auto piece = piece_type::empty;
         switch(*f) {
-			case 'p': piece = piece_type::bp; break;
-			case 'r': piece = piece_type::br; break;
-			case 'n': piece = piece_type::bn; break;
-			case 'b': piece = piece_type::bb; break;
-			case 'q': piece = piece_type::bq; break;
-			case 'k': piece = piece_type::bk; break;
-			case 'P': piece = piece_type::wp; break;
-			case 'R': piece = piece_type::wr; break;
-			case 'N': piece = piece_type::wn; break;
-			case 'B': piece = piece_type::wb; break;
-			case 'Q': piece = piece_type::wq; break;
-			case 'K': piece = piece_type::wk; break;
+        case 'p': 
+            piece = piece_type::bp;
+            break;
+        case 'r': 
+            piece = piece_type::br;
+            break;
+        case 'n': 
+            piece = piece_type::bn;
+            break;
+        case 'b': 
+            piece = piece_type::bb;
+            break;
+        case 'q': 
+            piece = piece_type::bq;
+            break;
+        case 'k': 
+            piece = piece_type::bk;
+            break;
+        case 'P': 
+            piece = piece_type::wp;
+            break;
+        case 'R': 
+            piece = piece_type::wr;
+            break;
+        case 'N': 
+            piece = piece_type::wn;
+            break;
+        case 'B': 
+            piece = piece_type::wb;
+            break;
+        case 'Q': 
+            piece = piece_type::wq;
+            break;
+        case 'K': 
+            piece = piece_type::wk;
+            break;
 
-			case '1': case '2': case '3':
-			case '4': case '5': case '6':
-			case '7': case '8': case '9': {
-                count = *f - '0';
-                break;
-			}
+        case '1': case '2': case '3':
+        case '4': case '5': case '6':
+        case '7': case '8': {
+            count = *f - '0';
+            break;
+        }
 
-			case '/': case ' ': {
-                rank--;
-                file = file::file_a;
-                f++;
-                continue;
-			}
+        case '/': case ' ': {
+            rank--;
+            file = file::file_a;
+            continue;
+        }
 
-			default:
-			    return false;
+        default:
+            return false;
         }
 
         for(uint32 i = 0; i < count; ++i) {
-            // todo if bugged use auto sq64 = rank * 8 + file; auto sq120 = transition::sq120(sq64);
-            const auto sq120 = transition::fr_sq120(file, rank);;
+            const auto sq120 = transition::fr_sq120(file, rank);
             if(piece != piece_type::empty)
                 b_[sq120] = piece;
-
-            file++;
         }
+
+        file+= count;
     }
 
-    check(*f  == 'w' || *f == 'b');
+    ensure(*f == 'w' || *f == 'b');
 
     side_ = (*f == 'w') ? side::white : side::black;
     f += 2;
@@ -97,26 +121,34 @@ bool engine::board::set(const std::string &fen) {
             break;
 
         switch(*f) {
-			case 'K': cast_perm_ |= castling_permissions::c_wk; break;
-			case 'Q': cast_perm_ |= castling_permissions::c_wq; break;
-			case 'k': cast_perm_ |= castling_permissions::c_bk; break;
-			case 'q': cast_perm_ |= castling_permissions::c_bq; break;
-			default:
-			    return false;
+        case 'K': 
+            cast_perm_ |= castling_permissions::c_wk;
+            break;
+        case 'Q': 
+            cast_perm_ |= castling_permissions::c_wq;
+            break;
+        case 'k': 
+            cast_perm_ |= castling_permissions::c_bk;
+            break;
+        case 'q': 
+            cast_perm_ |= castling_permissions::c_bq;
+            break;
+        default:
+            return false;
         }
         f++;
     }
     f++;
 
-    check(cast_perm_ >= 0 && cast_perm_ < 16);
-    check(*f != ' ');
+    ensure(cast_perm_ >= 0 && cast_perm_ < 16);
+    ensure(*f != ' ');
 
     if(*f != '-') {
         const uint32 file = f[0] - 'a';
         const uint32 rank = f[1] - '1';
 
-        check(file >= file::file_a && file <= file::file_h);
-        check(rank >= rank::rank_1 && rank <= rank::rank_8);
+        ensure(file >= file::file_a && file <= file::file_h);
+        ensure(rank >= rank::rank_1 && rank <= rank::rank_8);
 
         en_passant_sq_ = static_cast<square>(transition::fr_sq120(file, rank));
     }
@@ -129,9 +161,8 @@ uint64 engine::board::generate_pos_key() {
     uint64 key = 0;
     for(uint32 sq = 0; sq < N_BOARD_SQUARES_X; ++sq) {
         const auto p = b_[sq];
-        // bug p can be square::offboard?
-        if(p != square::no_sq && p != piece_type::empty) {
-            check(p >= piece_type::wp && p <= piece_type::bk);
+        if(p != square::no_sq &&p != square::offboard && p != piece_type::empty) {
+            ensure(p >= piece_type::wp && p <= piece_type::bk);
             key ^= poskey::piece_keys[p][sq];
         }
     }
@@ -141,15 +172,30 @@ uint64 engine::board::generate_pos_key() {
     }
 
     if(en_passant_sq_ != square::no_sq) {
-        check(en_passant_sq_ >= 0 && en_passant_sq_ < N_BOARD_SQUARES_X);
+        ensure(en_passant_sq_ >= 0 && en_passant_sq_ < N_BOARD_SQUARES_X);
         key ^= poskey::piece_keys[piece_type::empty][en_passant_sq_];
     }
 
-    check(cast_perm_ >= 0 && cast_perm_ < 16);
+    ensure(cast_perm_ >= 0 && cast_perm_ < 16);
     key ^= poskey::castle_keys[cast_perm_];
     return key;
 }
 
 engine::square engine::board::king_of(const side side) {
     return king_sq_[side];
+}
+
+std::string engine::board::str() const {
+    std::ostringstream stream;
+
+    for(int32 rank = rank::rank_8; rank >= rank::rank_1; rank--) {
+        stream << rank + 1 << "   ";
+        for(int32 file = file::file_a; file <= file::file_h; file++) {
+            const auto piece = b_[transition::fr_sq120(file, rank)];
+            stream << std::setw(3) << std::left << representation::pieces[piece];
+        }
+        stream << '\n';
+    }
+
+    return stream.str();
 }
