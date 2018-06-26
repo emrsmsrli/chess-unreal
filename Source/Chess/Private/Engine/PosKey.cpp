@@ -1,6 +1,7 @@
 #include "PosKey.h"
 #include <random>
 #include <functional>
+#include <chrono>
 #include "CoreMinimal.h"
 
 namespace engine {
@@ -11,11 +12,14 @@ namespace engine {
     }
 }
 
-void engine::poskey::init() {
-    std::random_device r;
-    std::default_random_engine generator(r());
+auto create_uniform_random() {
+	std::mt19937_64 generator { std::chrono::high_resolution_clock::now().time_since_epoch().count() };
     std::uniform_int_distribution<uint64> distribution;
-    auto rand = std::bind(distribution, generator);
+    return std::bind(distribution, generator);
+}
+
+void engine::poskey::init() {
+    auto rand = create_uniform_random();
 
     for(uint32 i = 0; i < 13; ++i)
         for(uint32 j = 0; j < 120; ++j)
