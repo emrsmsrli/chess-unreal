@@ -13,10 +13,10 @@ namespace engine {
         square king_sq_[2];
         square en_passant_sq_;
 
-        uint32 piece_count_[N_PIECES];
-        uint32 n_big_pieces_[3];    // anything but pawn
-        uint32 n_major_pieces_[3];  // rook queen
-        uint32 n_minor_pieces_[3];  // bishop knight
+        uint32 n_big_pieces_[2];    // anything but pawn
+        uint32 n_major_pieces_[2];  // rook queen
+        uint32 n_minor_pieces_[2];  // bishop knight
+        uint32 material_score_[2];
 
         uint32 cast_perm_;
 
@@ -28,6 +28,7 @@ namespace engine {
 
         uint64 pos_key_;
 
+        uint32 piece_count_[N_PIECES];
         square piece_list_[N_PIECES][10];
 
     public:
@@ -37,6 +38,7 @@ namespace engine {
         bool set(const std::string& fen);
 
         uint64 generate_pos_key();
+        void update_material();
         square king_of(side side);
 
         std::string str() const;

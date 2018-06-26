@@ -20,10 +20,11 @@ void engine::board::reset() {
         b_[transition::sq120(sq)] = piece_type::empty;
     }
 
-    for(uint32 i = 0; i < 3; ++i) {
+    for(uint32 i = 0; i < 2; ++i) {
         n_big_pieces_[i] = 0;
         n_major_pieces_[i] = 0;
         n_minor_pieces_[i] = 0;
+        material_score_[i] = 0;
     }
 
     for(uint32 i = 0; i < N_PIECES; ++i) {
@@ -180,6 +181,28 @@ uint64 engine::board::generate_pos_key() {
     ensure(cast_perm_ >= 0 && cast_perm_ < 16);
     key ^= poskey::castle_keys[cast_perm_];
     return key;
+}
+
+void engine::board::update_material() {
+    for(uint32 sq = 0; sq < N_BOARD_SQUARES_X; ++sq) {
+        const auto piece = b_[sq];
+        if(piece != square::offboard && piece != piece_type::empty) {
+            const auto p = pieces[piece];
+            const auto color = p.color;
+
+            if(p.is_big) n_big_pieces_[color]++;
+            if(p.is_major) n_major_pieces_[color]++;
+            if(p.is_minor) n_minor_pieces_[color]++;
+
+            material_score_[color] += p.value;
+
+            piece_list_[piece][piece_count_[piece]] = static_cast<square>(sq);
+            piece_count_[piece]++;
+
+            if(piece == piece_type::wk) king_sq_[side::white] = static_cast<square>(sq);
+            if(piece == piece_type::bk) king_sq_[side::black] = static_cast<square>(sq);
+        }
+    }
 }
 
 engine::square engine::board::king_of(const side side) {
