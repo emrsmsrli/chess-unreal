@@ -34,6 +34,7 @@ void engine::board::reset() {
     for(uint32 side = side::white; side <= side::black; ++side)
         king_sq_[side] = square::no_sq;
 
+    history_.clear();
     side_ = side::both;
     en_passant_sq_ = square::no_sq;
     fifty_move_counter_ = 0;
