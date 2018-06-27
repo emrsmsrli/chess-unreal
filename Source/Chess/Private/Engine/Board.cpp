@@ -146,7 +146,7 @@ bool engine::board::set(const std::string& fen) {
             cast_perm_ |= castling_permissions::c_bq;
             break;
         default:
-            return false;
+            break;
         }
         f++;
     }
