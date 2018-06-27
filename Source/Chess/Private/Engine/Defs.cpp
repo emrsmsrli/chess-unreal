@@ -10,19 +10,19 @@ namespace engine {
 }
 
 engine::piece engine::pieces[] = {
-    {false, false, false, 0, engine::side::both},
+    {0, engine::side::both, false, false, false, false},
 
-    {false, false, false, 100, engine::side::white},
-    {true, false, true, 325, engine::side::white},
-    {true, false, true, 325, engine::side::white},
-    {true, true, false, 550, engine::side::white},
-    {true, true, false, 1000, engine::side::white},
-    {true, true, false, 50000, engine::side::white},
+    {100, engine::side::white, false, false, false, false},
+    {325, engine::side::white, true, false, false, false},
+    {325, engine::side::white, false, false, false, true},
+    {550, engine::side::white, false, false, true, false},
+    {1000, engine::side::white, false, false, true, true},
+    {50000, engine::side::white, false, true, false, false},
 
-    {false, false, false, 100, engine::side::black},
-    {true, false, true, 325, engine::side::black},
-    {true, false, true, 325, engine::side::black},
-    {true, true, false, 550, engine::side::black},
-    {true, true, false, 1000, engine::side::black},
-    {true, true, false, 50000, engine::side::black}
+    {100, engine::side::black, false, false, false, false},
+    {325, engine::side::black, true, false, false, false},
+    {325, engine::side::black, false, false, false, true},
+    {550, engine::side::black, false, false, true, false},
+    {1000, engine::side::black, false, false, true, true},
+    {50000, engine::side::black, false, true, false, false}
 };

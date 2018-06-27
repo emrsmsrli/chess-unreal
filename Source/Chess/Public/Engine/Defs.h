@@ -46,8 +46,23 @@ namespace engine {
         uint32 value;
         side side;
 
-        piece(const bool ib, const bool imj, const bool imn, const uint32 v, const engine::side s)
-            : is_big(ib), is_major(imj), is_minor(imn), value(v), side(s) {}
+        bool is_pawn;
+        bool is_knight;
+        bool is_king;
+        bool is_rook_queen;
+        bool is_bishop_queen;
+        bool is_sliding;
+
+        piece(const uint32 v, const engine::side s, const bool ikn, 
+			  const bool ikg, const bool irq, const bool ibq)
+            : value(v), side(s), is_knight(ikn), is_king(ikg),
+              is_rook_queen(irq), is_bishop_queen(ibq) {
+            is_pawn = value && !is_rook_queen && !is_knight && !is_bishop_queen && !is_king;
+            is_big = !is_pawn;
+            is_major = is_rook_queen || is_king;
+            is_minor = is_knight || is_bishop_queen && !is_rook_queen;
+            is_sliding = !is_pawn && !is_knight;
+        }
     };
 
     extern piece pieces[];
