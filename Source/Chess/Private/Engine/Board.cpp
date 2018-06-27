@@ -156,6 +156,7 @@ bool engine::board::set(const std::string& fen) {
     }
 
     pos_key_ = generate_pos_key();
+    update_material();
     return true;
 }
 
