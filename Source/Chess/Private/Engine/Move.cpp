@@ -10,6 +10,9 @@ namespace {
     const uint32 mask_move_promoted_piece = 0xF;
     const uint32 mask_move_is_cast = 0x1000000;
 
+    const uint32 mask_move_is_capture = 0x7C000;
+    const uint32 mask_move_is_promote = 0xF00000;
+
     const uint32 shift_move_to = 7;
     const uint32 shift_move_captured = 14;
     const uint32 shift_move_promoted_piece = 20;
@@ -38,6 +41,14 @@ engine::piece_type engine::move::captured_piece() const {
 
 engine::piece_type engine::move::promoted_piece() const {
     return static_cast<engine::piece_type>(get(shift_move_promoted_piece, mask_move_promoted_piece));
+}
+
+bool engine::move::is_captured() const {
+    return (move_ & mask_move_is_capture) != 0;
+}
+
+bool engine::move::is_promoted() const {
+    return (move_ & mask_move_is_promote) != 0;
 }
 
 bool engine::move::is_enpassant() const {

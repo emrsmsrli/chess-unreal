@@ -17,6 +17,8 @@ namespace engine {
         engine::piece_type captured_piece() const;
         engine::piece_type promoted_piece() const;
 
+        bool is_captured() const;
+        bool is_promoted() const;
         bool is_enpassant() const;
         bool is_pawnstart() const;
         bool is_castling() const;
