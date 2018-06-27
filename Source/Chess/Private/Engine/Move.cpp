@@ -18,48 +18,9 @@ namespace {
     const uint32 shift_move_is_cast = 24;
 }
 
-engine::move::move_builder::move_builder() {
-    m_ = 0;
-}
-
-engine::move::move_builder* engine::move::move_builder::from(const engine::square sq) {
-    m_ |= static_cast<uint64>(sq);
-    return this;
-}
-
-engine::move::move_builder* engine::move::move_builder::to(const engine::square sq) {
-    m_ |= static_cast<uint64>(sq) << shift_move_to;
-    return this;
-}
-
-engine::move::move_builder* engine::move::move_builder::captured_piece(const engine::piece_type piece) {
-    m_ |= static_cast<uint64>(piece) << shift_move_captured;
-    return this;
-}
-
-engine::move::move_builder* engine::move::move_builder::en_passant() {
-    m_ |= 1ULL << shift_move_is_ep;
-    return this;
-}
-
-engine::move::move_builder* engine::move::move_builder::pawn_start() {
-    m_ |= 1ULL << shift_move_pawn_start;
-    return this;
-}
-
-engine::move::move_builder* engine::move::move_builder::castling() {
-    m_ |= 1ULL << shift_move_is_cast;
-    return this;
-}
-
-engine::move engine::move::move_builder::build() {
-    const uint64 m = m_;
-    m_ = 0;
-    return move(m);
-}
-
-engine::move::move(const uint32 m) {
+engine::move::move(const uint32 m, const uint32 s) {
     move_ = m;
+    score_ = s;
 }
 
 uint32 engine::move::get(const uint32 shift, const uint32 and) const {
@@ -92,6 +53,23 @@ bool engine::move::is_pawnstart() const {
 
 bool engine::move::is_castling() const {
     return get(shift_move_is_cast, mask_move_is_cast);
+}
+
+uint32 engine::move::score() const {
+    return score_;
+}
+
+engine::move engine::move::create(const uint32 score, const engine::square from,
+                                  const engine::square to, const engine::piece_type captured,
+                                  const bool en_passant, const bool pawn_start, const bool castling) {
+    uint32 m = 0;
+    m |= from;
+    m |= to << shift_move_to;
+    m |= captured << shift_move_captured;
+    m |= en_passant << shift_move_is_ep;
+    m |= pawn_start << shift_move_pawn_start;
+    m |= castling << shift_move_is_cast;
+	return {m, score};
 }
 
 std::string engine::move::str() const {

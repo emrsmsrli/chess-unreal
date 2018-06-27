@@ -6,25 +6,9 @@
 
 namespace engine {
     class CHESS_API move {
-        class CHESS_API move_builder {
-        public:
-            move_builder();
-
-        private:
-            uint32 m_;
-
-        public:
-            move_builder* from(engine::square sq);
-            move_builder* to(engine::square sq);
-            move_builder* captured_piece(engine::piece_type piece);
-            move_builder* en_passant();
-            move_builder* pawn_start();
-            move_builder* castling();
-            move build();
-        };
-
         uint32 move_;
-        explicit move(uint32 m);
+        uint32 score_;
+        move(uint32 m, uint32 s);
 
     public:
         uint32 from() const;
@@ -37,10 +21,11 @@ namespace engine {
         bool is_pawnstart() const;
         bool is_castling() const;
 
-        static move_builder* builder() {
-            static move_builder builder;
-            return &builder;
-        }
+        uint32 score() const;
+
+        static move create(uint32 score, engine::square from, engine::square to, 
+							engine::piece_type captured, bool en_passant, 
+							bool pawn_start, bool castling);
 
         std::string str() const;
 
