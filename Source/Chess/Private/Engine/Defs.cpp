@@ -1,4 +1,5 @@
 #include "Defs.h"
+#include <sstream>
 
 namespace engine {
     namespace representation {
@@ -6,6 +7,13 @@ namespace engine {
         char files[] = "abcdefgh";
         char ranks[] = "12345678";
         char sides[] = "wb-";
+
+        // todo do this oop?
+        std::string sq_str(const engine::square sq) {
+            std::ostringstream stream;
+            stream << 'a' + files[sq] << '1' + ranks[sq];
+            return stream.str();
+        }
     }
 }
 

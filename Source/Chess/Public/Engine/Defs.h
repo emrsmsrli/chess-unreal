@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include <string>
 
 #define N_BOARD_SQUARES_X	120
 #define N_BOARD_SQUARES		64
@@ -72,5 +73,7 @@ namespace engine {
         extern char files[];
         extern char ranks[];
         extern char sides[];
+
+        std::string sq_str(engine::square sq);
 	}
 }
