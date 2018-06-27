@@ -13,7 +13,7 @@ namespace engine {
 
 void engine::transition::init() {
     for(uint32 i = 0; i < N_BOARD_SQUARES_X; ++i) {
-        sq120_sq64[i] = 65;
+        sq120_sq64[i] = square::offboard;
 
         files[i] = square::offboard;
         ranks[i] = square::offboard;
