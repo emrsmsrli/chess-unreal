@@ -1,4 +1,5 @@
 #include "Defs.h"
+#include "Transition.h"
 #include <sstream>
 
 namespace engine {
@@ -11,7 +12,8 @@ namespace engine {
         // todo do this oop?
         std::string sq_str(const engine::square sq) {
             std::ostringstream stream;
-            stream << 'a' + files[sq] << '1' + ranks[sq];
+            stream.put(files[transition::sq_file(sq)]);
+            stream.put(ranks[transition::sq_rank(sq)]);
             return stream.str();
         }
     }

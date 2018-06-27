@@ -88,10 +88,7 @@ engine::move engine::move::create(const uint32 score, const engine::square from,
 
 std::string engine::move::str() const {
     std::ostringstream stream;
-    stream.put(representation::files[transition::sq_file(from())])
-          .put(representation::ranks[transition::sq_rank(from())])
-          .put(representation::files[transition::sq_file(to())])
-          .put(representation::ranks[transition::sq_rank(to())]);
+    stream << representation::sq_str(from()) << representation::sq_str(to());
 
     if(is_promoted()) {
         const auto p = pieces[promoted_piece()];
