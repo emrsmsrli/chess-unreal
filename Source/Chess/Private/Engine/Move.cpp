@@ -1,4 +1,5 @@
 #include "Move.h"
+#include "Transition.h"
 #include <sstream>
 
 namespace {
@@ -70,7 +71,7 @@ uint32 engine::move::score() const {
 engine::move engine::move::create(const uint32 score, const engine::square from,
                                   const engine::square to, const engine::piece_type captured,
                                   const bool en_passant, const bool pawn_start,
-								  const engine::piece_type promoted, const bool castling) {
+                                  const engine::piece_type promoted, const bool castling) {
     uint32 m = 0;
     m |= from;
     m |= to << shift_move_to;
@@ -82,17 +83,28 @@ engine::move engine::move::create(const uint32 score, const engine::square from,
     m |= promoted << shift_move_promoted_piece;
     if(castling)
         m |= mask_move_is_cast;
-	return {m, score};
+    return {m, score};
 }
 
 std::string engine::move::str() const {
     std::ostringstream stream;
-    stream << "move - from: " << from() <<
-        " to: " << to() <<
-        " captured: " << captured_piece() <<
-        " promoted: " << promoted_piece() <<
-        " isep: " << is_enpassant() <<
-        " ispawnstart: " << is_pawnstart() <<
-        " iscast: " << is_castling() << '\n';
+    stream.put(representation::files[transition::sq_file(from())])
+          .put(representation::ranks[transition::sq_rank(from())])
+          .put(representation::files[transition::sq_file(to())])
+          .put(representation::ranks[transition::sq_rank(to())]);
+
+    if(is_promoted()) {
+        const auto p = pieces[promoted_piece()];
+        if(p.is_knight) {
+            stream.put('n');
+        } else if(p.is_rook_queen && !p.is_bishop_queen) {
+            stream.put('r');
+        } else if(!p.is_rook_queen && p.is_bishop_queen) {
+            stream.put('b');
+        } else {
+            stream.put('q');
+        }
+    }
+
     return stream.str();
 }
