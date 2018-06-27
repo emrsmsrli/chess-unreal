@@ -11,11 +11,11 @@ namespace engine {
         move(uint32 m, uint32 s);
 
     public:
-        uint32 from() const;
-        uint32 to() const;
+        engine::square from() const;
+        engine::square to() const;
 
-        uint32 captured_piece() const;
-        uint32 promoted_piece() const;
+        engine::piece_type captured_piece() const;
+        engine::piece_type promoted_piece() const;
 
         bool is_enpassant() const;
         bool is_pawnstart() const;
