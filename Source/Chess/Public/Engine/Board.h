@@ -41,6 +41,7 @@ namespace engine {
         void update_material();
         square king_of(side side);
 
+        bool is_valid();
         std::string str() const;
     };
 }

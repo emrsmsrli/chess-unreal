@@ -203,25 +203,101 @@ void engine::board::update_material() {
             case piece_type::wk:
                 king_sq_[side::white] = static_cast<square>(sq);
                 break;
-			case piece_type::bk:
+            case piece_type::bk:
                 king_sq_[side::black] = static_cast<square>(sq);
                 break;
-			case piece_type::wp:
+            case piece_type::wp:
                 pawns_[side::white].set_sq(transition::sq64(sq));
                 pawns_[side::both].set_sq(transition::sq64(sq));
                 break;
-			case piece_type::bp:
+            case piece_type::bp:
                 pawns_[side::black].set_sq(transition::sq64(sq));
                 pawns_[side::both].set_sq(transition::sq64(sq));
                 break;
-			default: break;
-            }        
+            default: break;
+            }
         }
     }
 }
 
 engine::square engine::board::king_of(const side side) {
     return king_sq_[side];
+}
+
+bool engine::board::is_valid() {
+    uint32 piece_count[N_PIECES];
+    uint32 n_big_pieces[2];
+    uint32 n_major_pieces[2];
+    uint32 n_minor_pieces[2];
+    uint32 material_score[2];
+
+    bitboard pawns[3];
+    pawns[0] = *pawns_[0];
+    pawns[1] = *pawns_[1];
+    pawns[2] = *pawns_[2];
+
+    for(uint32 p = piece_type::wp; p <= piece_type::bk; ++p) {
+        for(uint32 n_p = 0; n_p < piece_count_[p]; ++n_p) {
+            const auto sq120 = piece_list_[p][n_p];
+            ensure(b_[sq120] == p);
+        }
+    }
+
+    for(uint32 sq64 = 0; sq64 < N_BOARD_SQUARES; sq64++) {
+        const auto sq120 = transition::sq120(sq64);
+        const auto p = b_[sq120];
+        piece_count[p]++;
+
+        const auto color = pieces[p].color;
+        if(pieces[p].is_big) n_big_pieces[color]++;
+        if(pieces[p].is_major) n_major_pieces[color]++;
+        if(pieces[p].is_minor) n_minor_pieces[color]++;
+
+        material_score[color] += pieces[p].value;
+    }
+
+    for(uint32 p = piece_type::wp; p <= piece_type::bk; ++p) {
+        ensure(piece_count[p] == piece_count_[p]);
+    }
+
+    ensure(pawns[side::white].count() == piece_count_[piece_type::wp]);
+    ensure(pawns[side::black].count() == piece_count_[piece_type::bp]);
+    ensure(pawns[side::both].count() == piece_count_[piece_type::wp] + piece_count_[piece_type::bp]);
+
+    while(!pawns[side::white].is_empty()) {
+        const auto sq64 = pawns[side::white].pop();
+        ensure(b_[transition::sq120(sq64)] == piece_type::wp);
+    }
+
+    while(!pawns[side::black].is_empty()) {
+        const auto sq64 = pawns[side::black].pop();
+        ensure(b_[transition::sq120(sq64)] == piece_type::bp);
+    }
+
+    while(!pawns[side::both].is_empty()) {
+        const auto sq64 = pawns[side::both].pop();
+        ensure(b_[transition::sq120(sq64)] == piece_type::wp || b_[transition::sq120(sq64)] == piece_type::bp);
+    }
+
+    ensure(material_score[side::white] == material_score_[side::white] 
+		   && material_score[side::black] == material_score_[side::black]);
+    ensure(n_minor_pieces[side::white] == n_minor_pieces_[side::white] 
+		   && n_minor_pieces[side::black] == n_minor_pieces_[side::black]);
+    ensure(n_major_pieces[side::white] == n_major_pieces_[side::white] 
+		   && n_major_pieces[side::black] == n_major_pieces_[side::black]);
+    ensure(n_big_pieces[side::white] == n_big_pieces_[side::white] 
+		   && n_big_pieces[side::black] == n_big_pieces_[side::black]);
+    ensure(side_ == side::white || side_ == side::black);
+    ensure(generate_pos_key() == pos_key_);
+
+    ensure(en_passant_sq_ == square::no_sq ||
+        transition::sq_rank(en_passant_sq_) == rank::rank_6 && side_ == side::white ||
+        transition::sq_rank(en_passant_sq_) == rank::rank_3 && side_ == side::black);
+
+    ensure(b_[king_sq_[side::white]] == piece_type::wk);
+    ensure(b_[king_sq_[side::black]] == piece_type::bk);
+
+    return true;
 }
 
 std::string engine::board::str() const {
