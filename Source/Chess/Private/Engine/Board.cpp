@@ -7,6 +7,15 @@
 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
+namespace engine {
+    namespace {
+        const int32 direction_knight[] = {-8, -19, -21, -12, 8, 19, 21, 12};
+        const int32 direction_rook[] = {-1, -10, 1, 10};
+        const int32 direction_bishop[] = {-9, -11, 9, 11};
+        const int32 direction_king[] = {-1, -10, -9, -11, 1, 10, 9, 11};
+    }
+}
+
 engine::board::board() {
     set(START_FEN);
 }
@@ -224,6 +233,65 @@ void engine::board::update_material() {
 
 engine::square engine::board::king_of(const side side) {
     return king_sq_[side];
+}
+
+bool engine::board::is_attacked(const square sq, const side side) {
+    // pawns
+    if(side == side::white) {
+        if(b_[sq - 11] == piece_type::wp || b_[sq - 9] == piece_type::wp)
+            return true;
+    } else {
+        if(b_[sq + 11] == piece_type::bp || b_[sq + 9] == piece_type::bp)
+            return true;
+	}
+
+    // knights
+    for(uint32 i = 0; i < 8; ++i) {
+        const auto piece = pieces[b_[static_cast<int>(sq) + direction_knight[i]]];
+        if(piece.is_knight && piece.side == side)
+            return true;
+    }
+
+    // rooks & queens
+    for(uint32 i = 0; i < 4; ++i) {
+        const auto d = direction_rook[i];
+        auto sqq = sq + d;
+        auto piece = b_[sqq];
+        while(piece != square::offboard) {
+            if(piece != piece_type::empty) {
+                if(pieces[piece].is_rook_queen && pieces[piece].side == side)
+                    return true;
+                break;
+            }
+            sqq += d;
+            piece = b_[sqq];
+        }
+    }
+
+    // bishops & queens
+    for(uint32 i = 0; i < 4; ++i) {
+        const auto d = direction_bishop[i];
+        auto sqq = sq + d;
+        auto piece = b_[sqq];
+        while(piece != square::offboard) {
+            if(piece != piece_type::empty) {
+                if(pieces[piece].is_bishop_queen && pieces[piece].side == side)
+                    return true;
+                break;
+            }
+            sqq += d;
+            piece = b_[sqq];
+        }
+    }
+
+    // kings
+    for(uint32 i = 0; i < 4; ++i) {
+        const auto piece = b_[sq + direction_king[i]];
+        if(pieces[piece].is_king && pieces[piece].side == side)
+            return true;
+    }
+
+    return false;
 }
 
 bool engine::board::is_valid() {

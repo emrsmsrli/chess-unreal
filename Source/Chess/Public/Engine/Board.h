@@ -36,10 +36,11 @@ namespace engine {
 
         void reset();
         bool set(const std::string& fen);
-
         uint64 generate_pos_key();
         void update_material();
+
         square king_of(side side);
+        bool is_attacked(square sq, side side);
 
         bool is_valid();
         std::string str() const;
