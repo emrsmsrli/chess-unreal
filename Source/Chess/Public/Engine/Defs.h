@@ -44,10 +44,10 @@ namespace engine {
         bool is_major;
         bool is_minor;
         uint32 value;
-        side color;
+        side side;
 
-        piece(const bool ib, const bool imj, const bool imn, const uint32 v, const side c)
-            : is_big(ib), is_major(imj), is_minor(imn), value(v), color(c) {}
+        piece(const bool ib, const bool imj, const bool imn, const uint32 v, const engine::side s)
+            : is_big(ib), is_major(imj), is_minor(imn), value(v), side(s) {}
     };
 
     extern piece pieces[];

@@ -190,13 +190,13 @@ void engine::board::update_material() {
         const auto piece = b_[sq];
         if(piece != square::offboard && piece != piece_type::empty) {
             const auto p = pieces[piece];
-            const auto color = p.color;
+            const auto side = p.side;
 
-            if(p.is_big) n_big_pieces_[color]++;
-            if(p.is_major) n_major_pieces_[color]++;
-            if(p.is_minor) n_minor_pieces_[color]++;
+            if(p.is_big) n_big_pieces_[side]++;
+            if(p.is_major) n_major_pieces_[side]++;
+            if(p.is_minor) n_minor_pieces_[side]++;
 
-            material_score_[color] += p.value;
+            material_score_[side] += p.value;
 
             piece_list_[piece][piece_count_[piece]] = static_cast<square>(sq);
             piece_count_[piece]++;
@@ -253,12 +253,12 @@ bool engine::board::is_valid() {
         const auto p = b_[sq120];
         piece_count[p]++;
 
-        const auto color = pieces[p].color;
-        if(pieces[p].is_big) n_big_pieces[color]++;
-        if(pieces[p].is_major) n_major_pieces[color]++;
-        if(pieces[p].is_minor) n_minor_pieces[color]++;
+        const auto side = pieces[p].side;
+        if(pieces[p].is_big) n_big_pieces[side]++;
+        if(pieces[p].is_major) n_major_pieces[side]++;
+        if(pieces[p].is_minor) n_minor_pieces[side]++;
 
-        material_score[color] += pieces[p].value;
+        material_score[side] += pieces[p].value;
     }
 
     for(uint32 p = piece_type::wp; p <= piece_type::bk; ++p) {
