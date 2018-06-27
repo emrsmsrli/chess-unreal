@@ -227,15 +227,18 @@ engine::square engine::board::king_of(const side side) {
 
 bool engine::board::is_valid() {
     uint32 piece_count[N_PIECES];
-    uint32 n_big_pieces[2];
-    uint32 n_major_pieces[2];
-    uint32 n_minor_pieces[2];
-    uint32 material_score[2];
+	uint32 n_big_pieces[2] = {0, 0};
+    uint32 n_major_pieces[2] = {0, 0};
+    uint32 n_minor_pieces[2] = {0, 0};
+    uint32 material_score[2] = {0, 0};
 
     bitboard pawns[3];
     pawns[0] = *pawns_[0];
     pawns[1] = *pawns_[1];
     pawns[2] = *pawns_[2];
+
+    for(uint32 sq = 0; sq < N_PIECES; sq++)
+        piece_count[sq] = 0;
 
     for(uint32 p = piece_type::wp; p <= piece_type::bk; ++p) {
         for(uint32 n_p = 0; n_p < piece_count_[p]; ++n_p) {
