@@ -25,7 +25,7 @@ namespace engine {
 
         static move create(uint32 score, engine::square from, engine::square to, 
 							engine::piece_type captured, bool en_passant, 
-							bool pawn_start, bool castling);
+							bool pawn_start, engine::piece_type promoted, bool castling);
 
         std::string str() const;
 

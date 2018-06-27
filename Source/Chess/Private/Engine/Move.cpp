@@ -61,13 +61,15 @@ uint32 engine::move::score() const {
 
 engine::move engine::move::create(const uint32 score, const engine::square from,
                                   const engine::square to, const engine::piece_type captured,
-                                  const bool en_passant, const bool pawn_start, const bool castling) {
+                                  const bool en_passant, const bool pawn_start,
+								  const engine::piece_type promoted, const bool castling) {
     uint32 m = 0;
     m |= from;
     m |= to << shift_move_to;
     m |= captured << shift_move_captured;
     m |= en_passant << shift_move_is_ep;
     m |= pawn_start << shift_move_pawn_start;
+    m |= promoted << shift_move_promoted_piece;
     m |= castling << shift_move_is_cast;
 	return {m, score};
 }
