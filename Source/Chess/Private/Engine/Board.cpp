@@ -199,8 +199,23 @@ void engine::board::update_material() {
             piece_list_[piece][piece_count_[piece]] = static_cast<square>(sq);
             piece_count_[piece]++;
 
-            if(piece == piece_type::wk) king_sq_[side::white] = static_cast<square>(sq);
-            if(piece == piece_type::bk) king_sq_[side::black] = static_cast<square>(sq);
+            switch(piece) {
+            case piece_type::wk:
+                king_sq_[side::white] = static_cast<square>(sq);
+                break;
+			case piece_type::bk:
+                king_sq_[side::black] = static_cast<square>(sq);
+                break;
+			case piece_type::wp:
+                pawns_[side::white].set_sq(transition::sq64(sq));
+                pawns_[side::both].set_sq(transition::sq64(sq));
+                break;
+			case piece_type::bp:
+                pawns_[side::black].set_sq(transition::sq64(sq));
+                pawns_[side::both].set_sq(transition::sq64(sq));
+                break;
+			default: break;
+            }        
         }
     }
 }
@@ -235,6 +250,8 @@ std::string engine::board::str() const {
         << (cast_perm_ & castling_permissions::c_bk ? 'k' : '-')
         << (cast_perm_ & castling_permissions::c_bq ? 'q' : '-');
     stream << "\npos key: " << std::hex << pos_key_;
+
+    // todo remove this -- stream << "\nwp:\n" << pawns_[side::white].str() << "\nbp:\n" << pawns_[side::black].str() << '\n';
 
     return stream.str();
 }
