@@ -302,9 +302,9 @@ bool engine::board::is_valid() {
     uint32 material_score[2] = {0, 0};
 
     bitboard pawns[3];
-    pawns[0] = *pawns_[0];
-    pawns[1] = *pawns_[1];
-    pawns[2] = *pawns_[2];
+    pawns[0] = static_cast<uint64>(pawns_[0]);
+    pawns[1] = static_cast<uint64>(pawns_[1]);
+    pawns[2] = static_cast<uint64>(pawns_[2]);
 
     for(uint32 sq = 0; sq < N_PIECES; sq++)
         piece_count[sq] = 0;
