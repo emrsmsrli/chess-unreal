@@ -27,7 +27,7 @@ namespace engine {
         bool is_empty() const;
 
         std::string str() const;
-        uint64 operator*() const;
+        operator uint64() const;
         bitboard& operator=(uint64 b);
     };
 

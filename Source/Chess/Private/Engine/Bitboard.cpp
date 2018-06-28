@@ -12,7 +12,7 @@ namespace engine {
 void engine::bitmask::init() {
     for(uint32 i = 0; i < N_BOARD_SQUARES; ++i) {
         set_mask[i] = 1ULL << i;
-        clr_mask[i] = ~*set_mask[i];
+        clr_mask[i] = ~set_mask[i];
     }
 }
 
@@ -21,15 +21,15 @@ engine::bitboard::bitboard() {
 }
 
 void engine::bitboard::set_sq(const uint32 sq) {
-    board_ |= *bitmask::set_mask[sq];
+    board_ |= bitmask::set_mask[sq];
 }
 
 void engine::bitboard::clr_sq(const uint32 sq) {
-    board_ &= *bitmask::clr_mask[sq];
+    board_ &= bitmask::clr_mask[sq];
 }
 
 uint32 engine::bitboard::pop() {
-    const uint64 b = board_ ^ (board_ - 1);
+    const auto b = board_ ^ (board_ - 1);
     const uint32 fold = (b & 0xFFFFFFFF) ^ (b >> 32);
     board_ &= board_ - 1;
     return btable_[fold * 0x783a9b23 >> 26];
@@ -66,7 +66,7 @@ std::string engine::bitboard::str() const {
     return stream.str();
 }
 
-uint64 engine::bitboard::operator*() const {
+engine::bitboard::operator uint64() const {
     return board_;
 }
 
