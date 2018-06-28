@@ -2,10 +2,12 @@
 #include "Transition.h"
 #include "PosKey.h"
 #include "Defs.h"
+#include "Verify.h"
 #include <sstream>
 #include <iomanip>
 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define MAX_POSITION_MOVES 256
 
 namespace engine {
     namespace {
@@ -28,6 +30,9 @@ void engine::board::reset() {
     for(uint32 sq = 0; sq < N_BOARD_SQUARES; ++sq) {
         b_[transition::sq120(sq)] = piece_type::empty;
     }
+
+    for(uint32 i = 0; i < 3; i++)
+        pawns_[i] = 0;
 
     for(uint32 i = 0; i < 2; ++i) {
         n_big_pieces_[i] = 0;
@@ -231,11 +236,11 @@ void engine::board::update_material() {
     }
 }
 
-engine::square engine::board::king_of(const side side) {
-    return king_sq_[side];
-}
-
 bool engine::board::is_attacked(const square sq, const side side) {
+    ensure(SQ_ON_BOARD(sq));
+    ensure(SIDE_VALID(side));
+    ensure(is_valid());
+
     // pawns
     if(side == side::white) {
         if(b_[sq - 11] == piece_type::wp || b_[sq - 9] == piece_type::wp)
@@ -243,7 +248,7 @@ bool engine::board::is_attacked(const square sq, const side side) {
     } else {
         if(b_[sq + 11] == piece_type::bp || b_[sq + 9] == piece_type::bp)
             return true;
-	}
+    }
 
     // knights
     for(uint32 i = 0; i < 8; ++i) {
@@ -296,7 +301,7 @@ bool engine::board::is_attacked(const square sq, const side side) {
 
 bool engine::board::is_valid() {
     uint32 piece_count[N_PIECES];
-	uint32 n_big_pieces[2] = {0, 0};
+    uint32 n_big_pieces[2] = {0, 0};
     uint32 n_major_pieces[2] = {0, 0};
     uint32 n_minor_pieces[2] = {0, 0};
     uint32 material_score[2] = {0, 0};
@@ -352,14 +357,14 @@ bool engine::board::is_valid() {
         ensure(b_[transition::sq120(sq64)] == piece_type::wp || b_[transition::sq120(sq64)] == piece_type::bp);
     }
 
-    ensure(material_score[side::white] == material_score_[side::white] 
-		   && material_score[side::black] == material_score_[side::black]);
-    ensure(n_minor_pieces[side::white] == n_minor_pieces_[side::white] 
-		   && n_minor_pieces[side::black] == n_minor_pieces_[side::black]);
-    ensure(n_major_pieces[side::white] == n_major_pieces_[side::white] 
-		   && n_major_pieces[side::black] == n_major_pieces_[side::black]);
-    ensure(n_big_pieces[side::white] == n_big_pieces_[side::white] 
-		   && n_big_pieces[side::black] == n_big_pieces_[side::black]);
+    ensure(material_score[side::white] == material_score_[side::white]
+        && material_score[side::black] == material_score_[side::black]);
+    ensure(n_minor_pieces[side::white] == n_minor_pieces_[side::white]
+        && n_minor_pieces[side::black] == n_minor_pieces_[side::black]);
+    ensure(n_major_pieces[side::white] == n_major_pieces_[side::white]
+        && n_major_pieces[side::black] == n_major_pieces_[side::black]);
+    ensure(n_big_pieces[side::white] == n_big_pieces_[side::white]
+        && n_big_pieces[side::black] == n_big_pieces_[side::black]);
     ensure(side_ == side::white || side_ == side::black);
     ensure(generate_pos_key() == pos_key_);
 
@@ -403,4 +408,74 @@ std::string engine::board::str() const {
     // todo remove this -- stream << "\nwp:\n" << pawns_[side::white].str() << "\nbp:\n" << pawns_[side::black].str() << '\n';
 
     return stream.str();
+}
+
+void engine::board::add_white_pawn_capture_move(const square from, const square to,
+                                                const piece_type captured, std::vector<engine::move>* moves) {
+    if(transition::sq_rank(from) == rank::rank_7) {
+        add_capture_move(move::create(from, to, captured, piece_type::wq, 0), moves);
+        add_capture_move(move::create(from, to, captured, piece_type::wr, 0), moves);
+        add_capture_move(move::create(from, to, captured, piece_type::wb, 0), moves);
+        add_capture_move(move::create(from, to, captured, piece_type::wn, 0), moves);
+    } else {
+        add_capture_move(move::create(from, to, captured, piece_type::empty, 0), moves);
+    }
+}
+
+void engine::board::add_white_pawn_move(const square from, const square to, std::vector<engine::move>* moves) {
+    if(transition::sq_rank(from) == rank::rank_7) {
+        add_quiet_move(move::create(from, to, piece_type::empty, piece_type::wq, 0), moves);
+        add_quiet_move(move::create(from, to, piece_type::empty, piece_type::wr, 0), moves);
+        add_quiet_move(move::create(from, to, piece_type::empty, piece_type::wb, 0), moves);
+        add_quiet_move(move::create(from, to, piece_type::empty, piece_type::wn, 0), moves);
+    } else {
+        add_quiet_move(move::create(from, to, piece_type::empty, piece_type::empty, 0), moves);
+    }
+}
+
+std::vector<engine::move>* engine::board::generate_moves() {
+    ensure(is_valid());
+    const auto moves = new std::vector<engine::move>;
+
+    if(side_ == side::white) {
+        for(uint32 p_count = 0; p_count < piece_count_[piece_type::wp]; ++p_count) {
+            const auto sq = piece_list_[piece_type::wp][p_count];
+            ensure(SQ_ON_BOARD(sq));
+                
+            if(b_[sq + 10] == piece_type::empty) {
+                add_white_pawn_move(sq, static_cast<square>(sq + 10), moves);
+                if(transition::sq_rank(sq) == rank::rank_2 && b_[sq + 20] == piece_type::empty)
+                    add_quiet_move(move::create(sq, static_cast<square>(sq + 20), piece_type::empty,
+                                                piece_type::empty, move::flag_pawn_start), moves);
+            }
+
+            if(SQ_ON_BOARD(sq + 9) && pieces[b_[sq + 9]].side == side::black)
+                add_white_pawn_capture_move(sq, static_cast<square>(sq + 9), static_cast<piece_type>(b_[sq + 9]),
+                                            moves);
+            if(SQ_ON_BOARD(sq + 11) && pieces[b_[sq + 11]].side == side::black)
+                add_white_pawn_capture_move(sq, static_cast<square>(sq + 11), static_cast<piece_type>(b_[sq + 11]),
+                                            moves);
+
+            if(sq + 9 == en_passant_sq_)
+                add_capture_move(move::create(sq, static_cast<square>(sq + 9), piece_type::empty, piece_type::empty,
+                                              move::flag_en_passant), moves);
+            if(sq + 11 == en_passant_sq_)
+                add_capture_move(move::create(sq, static_cast<square>(sq + 11), piece_type::empty, piece_type::empty,
+                                              move::flag_en_passant), moves);
+        }
+    }
+
+    return moves;
+}
+
+void engine::board::add_quiet_move(move* move, std::vector<engine::move>* moves) {
+    moves->push_back(*move);
+}
+
+void engine::board::add_capture_move(move* move, std::vector<engine::move>* moves) {
+    moves->push_back(*move);
+}
+
+void engine::board::add_en_passant_move(move* move, std::vector<engine::move>* moves) {
+    moves->push_back(*move);
 }

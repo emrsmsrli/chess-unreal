@@ -39,10 +39,19 @@ namespace engine {
         uint64 generate_pos_key();
         void update_material();
 
-        square king_of(side side);
         bool is_attacked(square sq, side side);
+        std::vector<engine::move>* generate_moves();
 
         bool is_valid();
         std::string str() const;
+
+    private:
+        static void add_white_pawn_capture_move(square from, square to, piece_type captured,
+                                                std::vector<engine::move>* moves);
+        static void add_white_pawn_move(square from, square to, std::vector<engine::move>* moves);
+
+        static void add_quiet_move(move* move, std::vector<engine::move>* moves);
+        static void add_capture_move(move* move, std::vector<engine::move>* moves);
+        static void add_en_passant_move(move* move, std::vector<engine::move>* moves);
     };
 }
