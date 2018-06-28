@@ -49,6 +49,9 @@ namespace engine {
         static void add_white_pawn_capture_move(square from, square to, piece_type captured,
                                                 std::vector<engine::move>* moves);
         static void add_white_pawn_move(square from, square to, std::vector<engine::move>* moves);
+        static void add_black_pawn_capture_move(square from, square to, piece_type captured,
+                                                std::vector<engine::move>* moves);
+        static void add_black_pawn_move(square from, square to, std::vector<engine::move>* moves);
 
         static void add_quiet_move(move* move, std::vector<engine::move>* moves);
         static void add_capture_move(move* move, std::vector<engine::move>* moves);

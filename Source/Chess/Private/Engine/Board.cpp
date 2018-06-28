@@ -433,6 +433,29 @@ void engine::board::add_white_pawn_move(const square from, const square to, std:
     }
 }
 
+void engine::board::add_black_pawn_capture_move(const square from, const square to,
+                                                const piece_type captured, std::vector<engine::move>* moves) {
+    if(transition::sq_rank(from) == rank::rank_2) {
+        add_capture_move(move::create(from, to, captured, piece_type::bq, 0), moves);
+        add_capture_move(move::create(from, to, captured, piece_type::br, 0), moves);
+        add_capture_move(move::create(from, to, captured, piece_type::bb, 0), moves);
+        add_capture_move(move::create(from, to, captured, piece_type::bn, 0), moves);
+    } else {
+        add_capture_move(move::create(from, to, captured, piece_type::empty, 0), moves);
+    }
+}
+
+void engine::board::add_black_pawn_move(const square from, const square to, std::vector<engine::move>* moves) {
+    if(transition::sq_rank(from) == rank::rank_2) {
+        add_quiet_move(move::create(from, to, piece_type::empty, piece_type::bq, 0), moves);
+        add_quiet_move(move::create(from, to, piece_type::empty, piece_type::br, 0), moves);
+        add_quiet_move(move::create(from, to, piece_type::empty, piece_type::bb, 0), moves);
+        add_quiet_move(move::create(from, to, piece_type::empty, piece_type::bn, 0), moves);
+    } else {
+        add_quiet_move(move::create(from, to, piece_type::empty, piece_type::empty, 0), moves);
+    }
+}
+
 std::vector<engine::move>* engine::board::generate_moves() {
     ensure(is_valid());
     const auto moves = new std::vector<engine::move>;
@@ -441,7 +464,7 @@ std::vector<engine::move>* engine::board::generate_moves() {
         for(uint32 p_count = 0; p_count < piece_count_[piece_type::wp]; ++p_count) {
             const auto sq = piece_list_[piece_type::wp][p_count];
             ensure(SQ_ON_BOARD(sq));
-                
+
             if(b_[sq + 10] == piece_type::empty) {
                 add_white_pawn_move(sq, static_cast<square>(sq + 10), moves);
                 if(transition::sq_rank(sq) == rank::rank_2 && b_[sq + 20] == piece_type::empty)
@@ -461,6 +484,32 @@ std::vector<engine::move>* engine::board::generate_moves() {
                                               move::flag_en_passant), moves);
             if(sq + 11 == en_passant_sq_)
                 add_capture_move(move::create(sq, static_cast<square>(sq + 11), piece_type::empty, piece_type::empty,
+                                              move::flag_en_passant), moves);
+        }
+    } else {
+        for(uint32 p_count = 0; p_count < piece_count_[piece_type::bp]; ++p_count) {
+            const auto sq = piece_list_[piece_type::bp][p_count];
+            ensure(SQ_ON_BOARD(sq));
+
+            if(b_[sq - 10] == piece_type::empty) {
+                add_black_pawn_move(sq, static_cast<square>(sq - 10), moves);
+                if(transition::sq_rank(sq) == rank::rank_7 && b_[sq - 20] == piece_type::empty)
+                    add_quiet_move(move::create(sq, static_cast<square>(sq - 20), piece_type::empty,
+                                                piece_type::empty, move::flag_pawn_start), moves);
+            }
+
+            if(SQ_ON_BOARD(sq - 9) && pieces[b_[sq - 9]].side == side::white)
+                add_black_pawn_capture_move(sq, static_cast<square>(sq - 9), static_cast<piece_type>(b_[sq - 9]),
+                                            moves);
+            if(SQ_ON_BOARD(sq - 11) && pieces[b_[sq - 11]].side == side::white)
+                add_black_pawn_capture_move(sq, static_cast<square>(sq - 11), static_cast<piece_type>(b_[sq - 11]),
+                                            moves);
+
+            if(sq - 9 == en_passant_sq_)
+                add_capture_move(move::create(sq, static_cast<square>(sq - 9), piece_type::empty, piece_type::empty,
+                                              move::flag_en_passant), moves);
+            if(sq - 11 == en_passant_sq_)
+                add_capture_move(move::create(sq, static_cast<square>(sq - 11), piece_type::empty, piece_type::empty,
                                               move::flag_en_passant), moves);
         }
     }
