@@ -68,7 +68,7 @@ uint32 engine::move::score() const {
     return score_;
 }
 
-engine::move engine::move::create(const engine::square from, const engine::square to,
+engine::move* engine::move::create(const engine::square from, const engine::square to,
                                   const engine::piece_type captured,
                                   const engine::piece_type promoted, const uint32 flags = 0) {
     uint32 m = 0;
@@ -77,7 +77,7 @@ engine::move engine::move::create(const engine::square from, const engine::squar
     m |= captured << shift_move_captured;
     m |= promoted << shift_move_promoted_piece;
     m |= flags;
-    return {m};
+    return new move(m);
 }
 
 std::string engine::move::str() const {
