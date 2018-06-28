@@ -15,6 +15,39 @@ namespace engine {
         const int32 direction_rook[] = {-1, -10, 1, 10};
         const int32 direction_bishop[] = {-9, -11, 9, 11};
         const int32 direction_king[] = {-1, -10, -9, -11, 1, 10, 9, 11};
+
+        const int32 l_sliding_pieces[] = {
+            piece_type::wb, piece_type::wr, piece_type::wq, 0,
+            piece_type::bb, piece_type::br, piece_type::bq, 0
+        };
+
+        const int32 l_non_sliding_pieces[] = {
+            piece_type::wn, piece_type::wk, 0,
+            piece_type::bn, piece_type::bk, 0
+        };
+
+        const int32 l_slide_index[] = {0, 4};
+        const int32 l_non_slide_index[] = {0, 3};
+
+        const int32 piece_directions[][8] = {
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {-8, -19, -21, -12, 8, 19, 21, 12},
+            {-9, -11, 9, 11, 0, 0, 0, 0},
+            {-1, -10, 1, 10, 0, 0, 0, 0},
+            {-1, -10, 1, 10, -9, -11, 9, 11},
+            {-1, -10, 1, 10, -9, -11, 9, 11},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {-8, -19, -21, -12, 8, 19, 21, 12},
+            {-9, -11, 9, 11, 0, 0, 0, 0},
+            {-1, -10, 1, 10, 0, 0, 0, 0},
+            {-1, -10, 1, 10, -9, -11, 9, 11},
+            {-1, -10, 1, 10, -9, -11, 9, 11},
+        };
+
+        const uint32 num_dir[] = {
+            0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8
+        };
     }
 }
 
@@ -412,6 +445,10 @@ std::string engine::board::str() const {
 
 void engine::board::add_white_pawn_capture_move(const square from, const square to,
                                                 const piece_type captured, std::vector<engine::move>* moves) {
+    ensure(PIECE_VALID_EMPTY(captured));
+    ensure(SQ_ON_BOARD(from));
+    ensure(SQ_ON_BOARD(to));
+
     if(transition::sq_rank(from) == rank::rank_7) {
         add_capture_move(move::create(from, to, captured, piece_type::wq, 0), moves);
         add_capture_move(move::create(from, to, captured, piece_type::wr, 0), moves);
@@ -423,6 +460,9 @@ void engine::board::add_white_pawn_capture_move(const square from, const square 
 }
 
 void engine::board::add_white_pawn_move(const square from, const square to, std::vector<engine::move>* moves) {
+    ensure(SQ_ON_BOARD(from));
+    ensure(SQ_ON_BOARD(to));
+
     if(transition::sq_rank(from) == rank::rank_7) {
         add_quiet_move(move::create(from, to, piece_type::empty, piece_type::wq, 0), moves);
         add_quiet_move(move::create(from, to, piece_type::empty, piece_type::wr, 0), moves);
@@ -435,6 +475,10 @@ void engine::board::add_white_pawn_move(const square from, const square to, std:
 
 void engine::board::add_black_pawn_capture_move(const square from, const square to,
                                                 const piece_type captured, std::vector<engine::move>* moves) {
+    ensure(PIECE_VALID_EMPTY(captured));
+    ensure(SQ_ON_BOARD(from));
+    ensure(SQ_ON_BOARD(to));
+
     if(transition::sq_rank(from) == rank::rank_2) {
         add_capture_move(move::create(from, to, captured, piece_type::bq, 0), moves);
         add_capture_move(move::create(from, to, captured, piece_type::br, 0), moves);
@@ -446,6 +490,9 @@ void engine::board::add_black_pawn_capture_move(const square from, const square 
 }
 
 void engine::board::add_black_pawn_move(const square from, const square to, std::vector<engine::move>* moves) {
+    ensure(SQ_ON_BOARD(from));
+    ensure(SQ_ON_BOARD(to));
+
     if(transition::sq_rank(from) == rank::rank_2) {
         add_quiet_move(move::create(from, to, piece_type::empty, piece_type::bq, 0), moves);
         add_quiet_move(move::create(from, to, piece_type::empty, piece_type::br, 0), moves);
@@ -486,6 +533,25 @@ std::vector<engine::move>* engine::board::generate_moves() {
                 add_capture_move(move::create(sq, static_cast<square>(sq + 11), piece_type::empty, piece_type::empty,
                                               move::flag_en_passant), moves);
         }
+
+        if(cast_perm_ & castling_permissions::c_wk) {
+            if(b_[square::f1] == piece_type::empty && b_[square::g1] == piece_type::empty) {
+                if(!is_attacked(square::e1, side::black) && !is_attacked(square::f1, side::black)) {
+                    add_quiet_move(move::create(square::e1, square::g1, piece_type::empty, piece_type::empty,
+                                                move::flag_castling), moves);
+                }
+            }
+        }
+
+        if(cast_perm_ & castling_permissions::c_wq) {
+            if(b_[square::d1] == piece_type::empty && b_[square::c1] == piece_type::empty && b_[square::b1] ==
+                piece_type::empty) {
+                if(!is_attacked(square::e1, side::black) && !is_attacked(square::d1, side::black)) {
+                    add_quiet_move(move::create(square::e1, square::c1, piece_type::empty, piece_type::empty,
+                                                move::flag_castling), moves);
+                }
+            }
+        }
     } else {
         for(uint32 p_count = 0; p_count < piece_count_[piece_type::bp]; ++p_count) {
             const auto sq = piece_list_[piece_type::bp][p_count];
@@ -511,6 +577,84 @@ std::vector<engine::move>* engine::board::generate_moves() {
             if(sq - 11 == en_passant_sq_)
                 add_capture_move(move::create(sq, static_cast<square>(sq - 11), piece_type::empty, piece_type::empty,
                                               move::flag_en_passant), moves);
+        }
+
+        if(cast_perm_ & castling_permissions::c_bk) {
+            if(b_[square::f8] == piece_type::empty && b_[square::g8] == piece_type::empty) {
+                if(!is_attacked(square::e8, side::white) && !is_attacked(square::f8, side::white)) {
+                    add_quiet_move(move::create(square::e8, square::g8, piece_type::empty, piece_type::empty,
+                                                move::flag_castling), moves);
+                }
+            }
+        }
+
+        if(cast_perm_ & castling_permissions::c_bq) {
+            if(b_[square::d8] == piece_type::empty && b_[square::c8] == piece_type::empty && b_[square::b8] ==
+                piece_type::empty) {
+                if(!is_attacked(square::e8, side::white) && !is_attacked(square::d8, side::white)) {
+                    add_quiet_move(move::create(square::e8, square::c8, piece_type::empty, piece_type::empty,
+                                                move::flag_castling), moves);
+                }
+            }
+        }
+    }
+
+    for(uint32 s_i = l_slide_index[side_]; ; s_i++) {
+        const auto piece = l_sliding_pieces[s_i];
+        if(piece == piece_type::empty)
+            break;
+        ensure(PIECE_VALID(piece));
+
+        for(uint32 p_n = 0; p_n < piece_count_[piece]; ++p_n) {
+            const auto sq = piece_list_[piece][p_n];
+            ensure(SQ_ON_BOARD(sq));
+
+            for(uint32 i = 0; i < num_dir[piece]; ++i) {
+                const auto dir = piece_directions[piece][i];
+                auto sqq = sq + dir;
+
+                while(SQ_ON_BOARD(sqq)) {
+                    if(b_[sqq] != piece_type::empty) {
+                        if(pieces[b_[sqq]].side == (side_ ^ 1))
+                            add_capture_move(move::create(sq, static_cast<square>(sqq),
+                                                          static_cast<piece_type>(b_[sqq]), piece_type::empty, 0),
+                                             moves);
+                        break;
+                    }
+                    add_quiet_move(move::create(sq, static_cast<square>(sqq),
+                                                piece_type::empty, piece_type::empty, 0), moves);
+                    sqq += dir;
+                }
+            }
+        }
+    }
+
+    for(uint32 s_i = l_non_slide_index[side_]; ; s_i++) {
+        const auto piece = l_non_sliding_pieces[s_i];
+        if(piece == piece_type::empty)
+            break;
+        ensure(PIECE_VALID(piece));
+
+        for(uint32 p_n = 0; p_n < piece_count_[piece]; ++p_n) {
+            const auto sq = piece_list_[piece][p_n];
+            ensure(SQ_ON_BOARD(sq));
+
+            for(uint32 i = 0; i < num_dir[piece]; ++i) {
+                const auto dir = piece_directions[piece][i];
+                const auto sqq = sq + dir;
+
+                if(!SQ_ON_BOARD(sqq))
+                    continue;
+
+                if(b_[sqq] != piece_type::empty) {
+                    if(pieces[b_[sqq]].side == (side_ ^ 1))
+                        add_capture_move(move::create(sq, static_cast<square>(sqq),
+                                                      static_cast<piece_type>(b_[sqq]), piece_type::empty, 0), moves);
+                    continue;
+                }
+                add_quiet_move(move::create(sq, static_cast<square>(sqq),
+                                            piece_type::empty, piece_type::empty, 0), moves);
+            }
         }
     }
 
