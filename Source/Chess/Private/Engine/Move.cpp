@@ -6,10 +6,7 @@ namespace {
     const uint32 mask_move_from = 0x7F;
     const uint32 mask_move_to = 0x7F;
     const uint32 mask_move_captured = 0xF;
-    const uint32 mask_move_is_ep = 0x40000;
-    const uint32 mask_move_pawn_start = 0x80000;
     const uint32 mask_move_promoted_piece = 0xF;
-    const uint32 mask_move_is_cast = 0x1000000;
 
     const uint32 mask_move_is_capture = 0x7C000;
     const uint32 mask_move_is_promote = 0xF00000;
@@ -19,9 +16,8 @@ namespace {
     const uint32 shift_move_promoted_piece = 20;
 }
 
-engine::move::move(const uint32 m, const uint32 s) {
+engine::move::move(const uint32 m) {
     move_ = m;
-    score_ = s;
 }
 
 uint32 engine::move::get(const uint32 shift, const uint32 and) const {
@@ -53,37 +49,35 @@ bool engine::move::is_promoted() const {
 }
 
 bool engine::move::is_enpassant() const {
-    return (move_ & mask_move_is_ep) != 0;
+    return (move_ & flag_en_passant) != 0;
 }
 
 bool engine::move::is_pawnstart() const {
-    return (move_ & mask_move_pawn_start) != 0;
+    return (move_ & flag_pawn_start) != 0;
 }
 
 bool engine::move::is_castling() const {
-    return (move_ & mask_move_is_cast) != 0;
+    return (move_ & flag_castling) != 0;
+}
+
+void engine::move::set_score(const uint32 s) {
+    score_ = s;
 }
 
 uint32 engine::move::score() const {
     return score_;
 }
 
-engine::move engine::move::create(const uint32 score, const engine::square from,
-                                  const engine::square to, const engine::piece_type captured,
-                                  const bool en_passant, const bool pawn_start,
-                                  const engine::piece_type promoted, const bool castling) {
+engine::move engine::move::create(const engine::square from, const engine::square to,
+                                  const engine::piece_type captured,
+                                  const engine::piece_type promoted, const uint32 flags = 0) {
     uint32 m = 0;
     m |= from;
     m |= to << shift_move_to;
     m |= captured << shift_move_captured;
-    if(en_passant)
-        m |= mask_move_is_ep;
-    if(pawn_start)
-        m |= mask_move_pawn_start;
     m |= promoted << shift_move_promoted_piece;
-    if(castling)
-        m |= mask_move_is_cast;
-    return {m, score};
+    m |= flags;
+    return {m};
 }
 
 std::string engine::move::str() const {

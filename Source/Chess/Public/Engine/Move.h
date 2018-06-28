@@ -6,9 +6,15 @@
 
 namespace engine {
     class CHESS_API move {
+    public:
+        static const uint32 flag_en_passant = 0x40000;
+        static const uint32 flag_pawn_start = 0x80000;
+        static const uint32 flag_castling = 0x1000000;
+
+    private:
         uint32 move_;
-        uint32 score_;
-        move(uint32 m, uint32 s);
+        uint32 score_ = 0;
+        move(uint32 m);
 
     public:
         engine::square from() const;
@@ -23,11 +29,12 @@ namespace engine {
         bool is_pawnstart() const;
         bool is_castling() const;
 
+        void set_score(uint32 s);
         uint32 score() const;
 
-        static move create(uint32 score, engine::square from, engine::square to, 
-							engine::piece_type captured, bool en_passant, 
-							bool pawn_start, engine::piece_type promoted, bool castling);
+        static move create(engine::square from, engine::square to,
+                           engine::piece_type captured,
+                           engine::piece_type promoted, uint32 flags);
 
         std::string str() const;
 
