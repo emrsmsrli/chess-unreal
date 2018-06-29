@@ -466,6 +466,47 @@ std::string engine::board::str() const {
     return stream.str();
 }
 
+void engine::board::perft(const int depth, long* leaf_nodes) {
+    ensure(is_valid());
+
+    if(depth == 0) {
+        ++*leaf_nodes;
+        return;
+    }
+
+    auto moves = *generate_moves();
+    for(auto& m : moves) {
+        if(!make_move(m))
+            continue;
+
+        perft(depth - 1, leaf_nodes);
+        take_move();
+    }
+}
+
+std::string engine::board::perf_test(const int depth) {
+    std::ostringstream stream;
+    ensure(is_valid());
+
+    stream << "board:\n" << str() << '\n';
+    stream << "starting perft, depth: " << depth << '\n';
+    long leaf_nodes = 0;
+    auto moves = *generate_moves();
+    for(auto& m : moves) {
+        if(!make_move(m))
+            continue;
+
+        long cumnodes = leaf_nodes;
+        perft(depth - 1, &leaf_nodes);
+        take_move();
+
+        long oldnodes = leaf_nodes - cumnodes;
+        stream << "move: " << m.str() << " : " << oldnodes << '\n';
+    }
+    stream << "test complete: " << leaf_nodes << " visited";
+    return stream.str();
+}
+
 bool engine::board::make_move(const move& m) {
     ensure(is_valid());
 

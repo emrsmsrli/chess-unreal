@@ -45,6 +45,9 @@ namespace engine {
         bool is_valid();
         std::string str() const;
 
+        void perft(int depth, long* leaf_nodes);
+        std::string perf_test(int depth);
+
     private:
         bool make_move(const move& m);
         void take_move();
