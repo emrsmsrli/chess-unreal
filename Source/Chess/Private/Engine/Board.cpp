@@ -471,6 +471,7 @@ bool engine::board::make_move(const move& m) {
 
     const auto from = m.from();
     const auto to = m.to();
+    const auto side = side_;
 
     ensure(SQ_ON_BOARD(from));
     ensure(SQ_ON_BOARD(to));
@@ -519,9 +520,9 @@ bool engine::board::make_move(const move& m) {
 
     HASH_CASTL();
 
-    const auto captured = m.captured_piece();
     fifty_move_counter_++;
-
+    
+    const auto captured = m.captured_piece();
     if(captured != piece_type::empty) {
         ensure(PIECE_VALID(captured));
         clear_piece(to);
@@ -534,7 +535,7 @@ bool engine::board::make_move(const move& m) {
     if(pieces[b_[from]].is_pawn) {
         fifty_move_counter_ = 0;
         if(m.is_pawnstart()) {
-            if(side_ == side::white) {
+            if(side == side::white) {
                 en_passant_sq_ = static_cast<square>(from + 10);
                 ensure(transition::sq_rank(en_passant_sq_) == rank::rank_3);
             } else {
@@ -558,12 +559,12 @@ bool engine::board::make_move(const move& m) {
         king_sq_[side_] = to;
     }
 
-    side_ = static_cast<side>(side_ ^ 1);
+    side_ = static_cast<engine::side>(side_ ^ 1);
     HASH_SIDE();
 
     ensure(is_valid());
 
-    if(is_attacked(king_sq_[side_ ^ 1], side_)) {
+    if(is_attacked(king_sq_[side], side_)) {
         take_move();
         return false;
     }
@@ -609,7 +610,7 @@ void engine::board::take_move() {
         switch(to) {
         case square::c1: move_piece(square::d1, square::a1);
             break;
-        case square::c8: move_piece(square::d8, square::a1);
+        case square::c8: move_piece(square::d8, square::a8);
             break;
         case square::g1: move_piece(square::f1, square::h1);
             break;
@@ -632,10 +633,11 @@ void engine::board::take_move() {
         add_piece(to, captured);
     }
 
+    const auto promoted = h.move.promoted_piece();
     if(h.move.is_promoted()) {
-        ensure(PIECE_VALID(h.move.promoted_piece()) && !pieces[h.move.promoted_piece()].is_pawn);
+        ensure(PIECE_VALID(promoted) && !pieces[promoted].is_pawn);
         clear_piece(from);
-        add_piece(from, pieces[h.move.promoted_piece()].side == side::white ? piece_type::wp : piece_type::bp);
+        add_piece(from, pieces[promoted].side == side::white ? piece_type::wp : piece_type::bp);
     }
 
     ensure(is_valid());
@@ -674,13 +676,13 @@ void engine::board::move_piece(const square from, const square to) {
     HASH_PIECE(p, from);
     b_[from] = piece_type::empty;
     HASH_PIECE(p, to);
-    b_[from] = p;
+    b_[to] = p;
 
     if(!pp.is_big) {
         pawns_[pp.side].clr_sq(transition::sq64(from));
         pawns_[side::both].clr_sq(transition::sq64(from));
-        pawns_[pp.side].clr_sq(transition::sq64(to));
-        pawns_[side::both].clr_sq(transition::sq64(to));
+        pawns_[pp.side].set_sq(transition::sq64(to));
+        pawns_[side::both].set_sq(transition::sq64(to));
     }
 
     for(uint32 i = 0; i < piece_count_[p]; ++i) {
@@ -693,6 +695,7 @@ void engine::board::move_piece(const square from, const square to) {
 
 void engine::board::clear_piece(const square sq) {
     ensure(SQ_ON_BOARD(sq));
+    ensure(is_valid());
     const auto p = b_[sq];
     const auto pp = pieces[p];
     ensure(PIECE_VALID(p));
