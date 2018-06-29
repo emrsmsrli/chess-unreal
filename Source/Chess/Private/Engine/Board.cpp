@@ -564,11 +564,81 @@ bool engine::board::make_move(const move& m) {
     ensure(is_valid());
 
     if(is_attacked(king_sq_[side_ ^ 1], side_)) {
-        // take_move();
+        take_move();
         return false;
     }
 
     return true;
+}
+
+void engine::board::take_move() {
+    ensure(is_valid());
+
+    auto h = history_.back();
+    history_.pop_back();
+
+    current_search_ply_--;
+
+    const auto from = h.move.from();
+    const auto to = h.move.to();
+    ensure(SQ_ON_BOARD(from));
+    ensure(SQ_ON_BOARD(to));
+
+    if(en_passant_sq_ != square::no_sq)
+        HASH_EN_P();
+    HASH_CASTL();
+
+    cast_perm_ = h.cast_perm;
+    fifty_move_counter_ = h.fifty_move_counter;
+    en_passant_sq_ = h.en_passant_sq;
+
+    if(en_passant_sq_ != square::no_sq)
+        HASH_EN_P();
+    HASH_CASTL();
+
+    side_ = static_cast<side>(side_ ^ 1);
+    HASH_SIDE();
+
+    if(h.move.is_enpassant()) {
+        if(side_ == side::white) {
+            add_piece(static_cast<square>(to - 10), piece_type::bp);
+        } else {
+            add_piece(static_cast<square>(to + 10), piece_type::wp);
+        }
+    } else if(h.move.is_castling()) {
+        switch(to) {
+        case square::c1: move_piece(square::d1, square::a1);
+            break;
+        case square::c8: move_piece(square::d8, square::a1);
+            break;
+        case square::g1: move_piece(square::f1, square::h1);
+            break;
+        case square::g8: move_piece(square::f8, square::h8);
+            break;
+        default:
+            ensure(false);
+        }
+    }
+
+    move_piece(to, from);
+
+    if(pieces[b_[from]].is_king) {
+        king_sq_[side_] = from;
+    }
+
+    const auto captured = h.move.captured_piece();
+    if(captured != piece_type::empty) {
+        ensure(PIECE_VALID(captured));
+        add_piece(to, captured);
+    }
+
+    if(h.move.is_promoted()) {
+        ensure(PIECE_VALID(h.move.promoted_piece()) && !pieces[h.move.promoted_piece()].is_pawn);
+        clear_piece(from);
+        add_piece(from, pieces[h.move.promoted_piece()].side == side::white ? piece_type::wp : piece_type::bp);
+    }
+
+    ensure(is_valid());
 }
 
 void engine::board::add_piece(const square sq, const piece_type piece) {

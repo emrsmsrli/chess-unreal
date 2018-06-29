@@ -47,6 +47,7 @@ namespace engine {
 
     private:
         bool make_move(const move& m);
+        void take_move();
 
         void add_piece(square sq, piece_type piece);
         void move_piece(square from, square to);
