@@ -466,6 +466,111 @@ std::string engine::board::str() const {
     return stream.str();
 }
 
+bool engine::board::make_move(const move& m) {
+    ensure(is_valid());
+
+    const auto from = m.from();
+    const auto to = m.to();
+
+    ensure(SQ_ON_BOARD(from));
+    ensure(SQ_ON_BOARD(to));
+    ensure(SIDE_VALID(side_));
+    ensure(PIECE_VALID(b_[from]));
+
+    auto u = undo(m);
+    u.pos_key = pos_key_;
+
+    if(m.is_enpassant()) {
+        if(side_ == side::white) {
+            clear_piece(static_cast<square>(to - 10));
+        } else {
+            clear_piece(static_cast<square>(to + 10));
+        }
+    } else if(m.is_castling()) {
+        switch(to) {
+        case square::c1:
+            move_piece(square::a1, square::d1);
+            break;
+		case square::c8:
+            move_piece(square::a8, square::d8);
+            break;
+		case square::g1:
+            move_piece(square::h1, square::f1);
+            break;
+		case square::g8:
+            move_piece(square::h8, square::f8);
+            break;
+		default:
+            verify(false);
+        }
+    }
+
+    if(en_passant_sq_ != square::no_sq)
+        HASH_EN_P();
+    HASH_CASTL();
+
+    u.fifty_move_counter = fifty_move_counter_;
+    u.en_passant_sq = en_passant_sq_;
+    u.cast_perm = cast_perm_;
+
+    cast_perm_ &= castle_perm[from];
+    cast_perm_ &= castle_perm[to];
+    en_passant_sq_ = square::no_sq;
+
+    HASH_CASTL();
+
+    const auto captured = m.captured_piece();
+    fifty_move_counter_++;
+
+    if(captured != piece_type::empty) {
+        ensure(PIECE_VALID(captured));
+        clear_piece(to);
+        fifty_move_counter_ = 0;
+    }
+
+    current_search_ply_++;
+    history_.push_back(u);
+
+    if(pieces[b_[from]].is_pawn) {
+        fifty_move_counter_ = 0;
+        if(m.is_pawnstart()) {
+            if(side_ == side::white) {
+                en_passant_sq_ = static_cast<square>(from + 10);
+                ensure(transition::sq_rank(en_passant_sq_) == rank::rank_3);
+            } else {
+                en_passant_sq_ = static_cast<square>(from - 10);
+                ensure(transition::sq_rank(en_passant_sq_) == rank::rank_6);
+            }
+            HASH_EN_P();
+        }
+    }
+
+    move_piece(from, to);
+
+    const auto promoted = m.promoted_piece();
+    if(promoted != piece_type::empty) {
+        ensure(PIECE_VALID(promoted) && !pieces[promoted].is_pawn);
+        clear_piece(to);
+        add_piece(to, promoted);
+    }
+
+    if(pieces[b_[to]].is_king) {
+        king_sq_[side_] = to;
+    }
+
+    side_ = static_cast<side>(side_ ^ 1);
+    HASH_SIDE();
+
+    ensure(is_valid());
+
+    if(is_attacked(king_sq_[side_ ^ 1], side_)) {
+        // take_move();
+        return false;
+    }
+
+    return true;
+}
+
 void engine::board::add_piece(const square sq, const piece_type piece) {
     ensure(SQ_ON_BOARD(sq));
     ensure(PIECE_VALID(piece));

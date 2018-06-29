@@ -46,6 +46,8 @@ namespace engine {
         std::string str() const;
 
     private:
+        bool make_move(const move& m);
+
         void add_piece(square sq, piece_type piece);
         void move_piece(square from, square to);
         void clear_piece(square sq);
