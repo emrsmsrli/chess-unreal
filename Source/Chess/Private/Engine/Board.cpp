@@ -3,11 +3,17 @@
 #include "PosKey.h"
 #include "Defs.h"
 #include "Verify.h"
+#include "PosKey.h"
 #include <sstream>
 #include <iomanip>
 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define MAX_POSITION_MOVES 256
+
+#define HASH_PIECE(p, sq)   (pos_key_ ^= poskey::piece_keys[p][sq])
+#define HASH_CASTL()        (pos_key_ ^= poskey::castle_keys[cast_perm_])
+#define HASH_SIDE()         (pos_key_ ^= poskey::side_key)
+#define HASH_EN_P()         (pos_key_ ^= poskey::piece_keys[piece_type::empty][en_passant_sq_])
 
 namespace engine {
     namespace {
@@ -47,6 +53,23 @@ namespace engine {
 
         const uint32 num_dir[] = {
             0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8
+        };
+
+
+        // video 38
+        const uint32 castle_perm[120] = {
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+            15, 13, 15, 15, 15, 12, 15, 15, 14, 15,
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+            15, 7, 15, 15, 15, 3, 15, 15, 11, 15,
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15
         };
     }
 }
@@ -441,6 +464,89 @@ std::string engine::board::str() const {
     // todo remove this -- stream << "\nwp:\n" << pawns_[side::white].str() << "\nbp:\n" << pawns_[side::black].str() << '\n';
 
     return stream.str();
+}
+
+void engine::board::add_piece(const square sq, const piece_type piece) {
+    ensure(SQ_ON_BOARD(sq));
+    ensure(PIECE_VALID(piece));
+
+    const auto p = pieces[piece];
+    HASH_PIECE(piece, sq);
+    b_[sq] = piece;
+
+    if(p.is_big) {
+        n_big_pieces_[p.side]++;
+        if(p.is_major) {
+            n_major_pieces_[p.side]++;
+        } else {
+            n_minor_pieces_[p.side]++;
+        }
+    } else {
+        pawns_[p.side].set_sq(transition::sq64(sq));
+        pawns_[side::both].set_sq(transition::sq64(sq));
+    }
+    material_score_[p.side] += p.value;
+    piece_list_[piece][piece_count_[piece]++] = sq;
+}
+
+void engine::board::move_piece(const square from, const square to) {
+    ensure(SQ_ON_BOARD(from));
+    ensure(SQ_ON_BOARD(to));
+
+    const auto p = b_[from];
+    const auto pp = pieces[p];
+
+    HASH_PIECE(p, from);
+    b_[from] = piece_type::empty;
+    HASH_PIECE(p, to);
+    b_[from] = p;
+
+    if(!pp.is_big) {
+        pawns_[pp.side].clr_sq(transition::sq64(from));
+        pawns_[side::both].clr_sq(transition::sq64(from));
+        pawns_[pp.side].clr_sq(transition::sq64(to));
+        pawns_[side::both].clr_sq(transition::sq64(to));
+    }
+
+    for(uint32 i = 0; i < piece_count_[p]; ++i) {
+        if(piece_list_[p][i] == from) {
+            piece_list_[p][i] = to;
+            break;
+        }
+    }
+}
+
+void engine::board::clear_piece(const square sq) {
+    ensure(SQ_ON_BOARD(sq));
+    const auto p = b_[sq];
+    const auto pp = pieces[p];
+    ensure(PIECE_VALID(p));
+
+    HASH_PIECE(p, sq);
+    b_[sq] = piece_type::empty;
+    material_score_[pp.side] -= pp.value;
+
+    if(pp.is_big) {
+        n_big_pieces_[pp.side]--;
+        if(pp.is_major) {
+            n_major_pieces_[pp.side]--;
+        } else {
+            n_minor_pieces_[pp.side]--;
+        }
+    } else {
+        pawns_[pp.side].clr_sq(transition::sq64(sq));
+        pawns_[side::both].clr_sq(transition::sq64(sq));
+    }
+
+    auto t_p = -1;
+    for(uint32 i = 0; i < piece_count_[p]; ++i) {
+        if(piece_list_[p][i] == sq) {
+            t_p = i;
+            break;
+        }
+    }
+    ensure(t_p != -1);
+    piece_list_[p][t_p] = piece_list_[p][--piece_count_[p]];
 }
 
 void engine::board::add_white_pawn_capture_move(const square from, const square to,

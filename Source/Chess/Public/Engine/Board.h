@@ -46,6 +46,10 @@ namespace engine {
         std::string str() const;
 
     private:
+        void add_piece(square sq, piece_type piece);
+        void move_piece(square from, square to);
+        void clear_piece(square sq);
+
         static void add_white_pawn_capture_move(square from, square to, piece_type captured,
                                                 std::vector<engine::move>* moves);
         static void add_white_pawn_move(square from, square to, std::vector<engine::move>* moves);
