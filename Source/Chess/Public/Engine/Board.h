@@ -52,6 +52,8 @@ namespace engine {
         std::string perf_test(int depth);
 
     private:
+        bool has_repetition();
+
         void add_piece(square sq, piece_type piece);
         void move_piece(square from, square to);
         void clear_piece(square sq);

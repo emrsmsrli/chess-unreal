@@ -508,6 +508,14 @@ std::string engine::board::perf_test(const int depth) {
     return stream.str();
 }
 
+bool engine::board::has_repetition() {
+    for(auto& undo : history_) {
+        if(undo.pos_key == pos_key_)
+            return true;
+    }
+    return false;
+}
+
 bool engine::board::make_move(const move& m) {
     ensure(is_valid());
 
