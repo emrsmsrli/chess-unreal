@@ -308,8 +308,9 @@ bool engine::board::is_attacked(const square sq, const side side) {
 
     // knights
     for(uint32 i = 0; i < 8; ++i) {
-        const auto piece = pieces[b_[static_cast<int>(sq) + direction_knight[i]]];
-        if(piece.is_knight && piece.side == side)
+        const auto p = b_[static_cast<int>(sq) + direction_knight[i]];
+        const auto piece = pieces[p];
+        if(p != square::offboard && piece.is_knight && piece.side == side)
             return true;
     }
 
@@ -346,9 +347,9 @@ bool engine::board::is_attacked(const square sq, const side side) {
     }
 
     // kings
-    for(uint32 i = 0; i < 4; ++i) {
+    for(uint32 i = 0; i < 8; ++i) {
         const auto piece = b_[sq + direction_king[i]];
-        if(pieces[piece].is_king && pieces[piece].side == side)
+        if(piece != square::offboard && pieces[piece].is_king && pieces[piece].side == side)
             return true;
     }
 
