@@ -32,7 +32,7 @@ namespace engine {
         void set_score(uint32 s);
         uint32 score() const;
 
-        static move* create(engine::square from, engine::square to,
+        static move create(engine::square from, engine::square to,
                            engine::piece_type captured,
                            engine::piece_type promoted, uint32 flags);
 

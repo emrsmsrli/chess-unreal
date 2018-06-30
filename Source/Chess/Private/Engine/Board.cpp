@@ -447,7 +447,7 @@ std::string engine::board::str() const {
         stream << '\n';
     }
 
-    stream << "\n  ";
+    stream << "  ";
     for(int32 file = file::file_a; file <= file::file_h; file++)
         stream << "---";
     stream << "\n    ";
@@ -475,7 +475,7 @@ void engine::board::perft(const int depth, long* leaf_nodes) {
         return;
     }
 
-    auto moves = *generate_moves();
+    auto moves = generate_moves();
     for(auto& m : moves) {
         if(!make_move(m))
             continue;
@@ -492,17 +492,17 @@ std::string engine::board::perf_test(const int depth) {
     stream << "board:\n" << str() << '\n';
     stream << "starting perft, depth: " << depth << '\n';
     long leaf_nodes = 0;
-    auto moves = *generate_moves();
+    auto moves = generate_moves();
     for(auto& m : moves) {
         if(!make_move(m))
             continue;
 
-        long cumnodes = leaf_nodes;
+        const auto cumumlative_nodes = leaf_nodes;
         perft(depth - 1, &leaf_nodes);
         take_move();
 
-        long oldnodes = leaf_nodes - cumnodes;
-        stream << "move: " << m.str() << " : " << oldnodes << '\n';
+        const auto old_nodes = leaf_nodes - cumumlative_nodes;
+        stream << "move: " << m.str() << " : " << old_nodes << '\n';
     }
     stream << "test complete: " << leaf_nodes << " visited";
     return stream.str();
@@ -770,7 +770,7 @@ void engine::board::clear_piece(const square sq) {
 }
 
 void engine::board::add_white_pawn_capture_move(const square from, const square to,
-                                                const piece_type captured, std::vector<engine::move>* moves) {
+                                                const piece_type captured, std::vector<engine::move>& moves) {
     ensure(PIECE_VALID_EMPTY(captured));
     ensure(SQ_ON_BOARD(from));
     ensure(SQ_ON_BOARD(to));
@@ -785,7 +785,7 @@ void engine::board::add_white_pawn_capture_move(const square from, const square 
     }
 }
 
-void engine::board::add_white_pawn_move(const square from, const square to, std::vector<engine::move>* moves) {
+void engine::board::add_white_pawn_move(const square from, const square to, std::vector<engine::move>& moves) {
     ensure(SQ_ON_BOARD(from));
     ensure(SQ_ON_BOARD(to));
 
@@ -800,7 +800,7 @@ void engine::board::add_white_pawn_move(const square from, const square to, std:
 }
 
 void engine::board::add_black_pawn_capture_move(const square from, const square to,
-                                                const piece_type captured, std::vector<engine::move>* moves) {
+                                                const piece_type captured, std::vector<engine::move>& moves) {
     ensure(PIECE_VALID_EMPTY(captured));
     ensure(SQ_ON_BOARD(from));
     ensure(SQ_ON_BOARD(to));
@@ -815,7 +815,7 @@ void engine::board::add_black_pawn_capture_move(const square from, const square 
     }
 }
 
-void engine::board::add_black_pawn_move(const square from, const square to, std::vector<engine::move>* moves) {
+void engine::board::add_black_pawn_move(const square from, const square to, std::vector<engine::move>& moves) {
     ensure(SQ_ON_BOARD(from));
     ensure(SQ_ON_BOARD(to));
 
@@ -829,9 +829,9 @@ void engine::board::add_black_pawn_move(const square from, const square to, std:
     }
 }
 
-std::vector<engine::move>* engine::board::generate_moves() {
+std::vector<engine::move> engine::board::generate_moves() {
     ensure(is_valid());
-    const auto moves = new std::vector<engine::move>;
+    std::vector<engine::move> moves;
 
     if(side_ == side::white) {
         for(uint32 p_count = 0; p_count < piece_count_[piece_type::wp]; ++p_count) {
@@ -987,14 +987,14 @@ std::vector<engine::move>* engine::board::generate_moves() {
     return moves;
 }
 
-void engine::board::add_quiet_move(move* move, std::vector<engine::move>* moves) {
-    moves->push_back(*move);
+void engine::board::add_quiet_move(const move move, std::vector<engine::move>& moves) {
+    moves.push_back(move);
 }
 
-void engine::board::add_capture_move(move* move, std::vector<engine::move>* moves) {
-    moves->push_back(*move);
+void engine::board::add_capture_move(const move move, std::vector<engine::move>& moves) {
+    moves.push_back(move);
 }
 
-void engine::board::add_en_passant_move(move* move, std::vector<engine::move>* moves) {
-    moves->push_back(*move);
+void engine::board::add_en_passant_move(const move move, std::vector<engine::move>& moves) {
+    moves.push_back(move);
 }
