@@ -11,10 +11,12 @@ namespace engine {
         static const uint32 flag_pawn_start = 0x80000;
         static const uint32 flag_castling = 0x1000000;
 
+        static const move no_move;
+
     private:
         uint32 move_;
         uint32 score_ = 0;
-        move(uint32 m);
+        explicit move(uint32 m);
 
     public:
         engine::square from() const;

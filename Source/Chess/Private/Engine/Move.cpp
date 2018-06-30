@@ -16,6 +16,9 @@ namespace {
     const uint32 shift_move_promoted_piece = 20;
 }
 
+const engine::move engine::move::no_move
+    = engine::move::create(square::no_sq, square::no_sq, piece_type::empty, piece_type::empty, 0);
+
 engine::move::move(const uint32 m) {
     move_ = m;
 }
