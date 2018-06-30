@@ -41,6 +41,9 @@ namespace engine {
 
         bool is_attacked(square sq, side side);
         std::vector<engine::move> generate_moves();
+        
+        bool make_move(const move& m);
+        void take_move();
 
         bool is_valid();
         std::string str() const;
@@ -49,9 +52,6 @@ namespace engine {
         std::string perf_test(int depth);
 
     private:
-        bool make_move(const move& m);
-        void take_move();
-
         void add_piece(square sq, piece_type piece);
         void move_piece(square from, square to);
         void clear_piece(square sq);
