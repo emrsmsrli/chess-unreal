@@ -77,3 +77,4 @@ Plugins/*/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 /cmake-build-debug
+/Chess.sln.DotSettings.user
