@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "PlayerPawnController.generated.h"
+#include "ChessPlayerController.generated.h"
 
 UCLASS()
-class CHESS_API APlayerPawnController : public APlayerController {
+class CHESS_API AChessPlayerController : public APlayerController {
 	GENERATED_BODY()
 
 public:
@@ -23,7 +23,7 @@ private:
     int32 previous_mouse_y_ = -1;
 
 public:
-    APlayerPawnController();
+    AChessPlayerController();
     void Tick(float DeltaSeconds) override;
 
 protected:

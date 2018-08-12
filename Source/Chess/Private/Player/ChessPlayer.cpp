@@ -1,11 +1,11 @@
 // Copyright 2018 Emre Simsirli
 
-#include "Player/PlayerPawn.h"
+#include "Player/ChessPlayer.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/Engine.h"
 
-APlayerPawn::APlayerPawn() {
+AChessPlayer::AChessPlayer() {
     PrimaryActorTick.bCanEverTick = true;
     bUseControllerRotationPitch = true;
     bUseControllerRotationYaw = true;
@@ -23,18 +23,18 @@ APlayerPawn::APlayerPawn() {
     Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 }
 
-void APlayerPawn::BeginPlay() {
+void AChessPlayer::BeginPlay() {
     APawn::BeginPlay();
 }
 
-void APlayerPawn::Tick(const float DeltaTime) {
+void AChessPlayer::Tick(const float DeltaTime) {
     APawn::Tick(DeltaTime);
 }
-
-void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
+    
+void AChessPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
     APawn::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void APlayerPawn::ZoomCamera(const float amount) const {
+void AChessPlayer::ZoomCamera(const float amount) const {
     CameraBoom->TargetArmLength = FMath::Clamp(CameraBoom->TargetArmLength + amount, 75.0f, 200.0f);
 }

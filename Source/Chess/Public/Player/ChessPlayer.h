@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "PlayerPawn.generated.h"
+#include "ChessPlayer.generated.h"
 
 UCLASS()
-class CHESS_API APlayerPawn : public APawn {
+class CHESS_API AChessPlayer : public APawn {
     GENERATED_BODY()
 
 public:
-    APlayerPawn();
+    AChessPlayer();
 
 protected:
     void BeginPlay() override;
