@@ -35,6 +35,6 @@ void AChessPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
     APawn::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AChessPlayer::ZoomCamera(const float amount) const {
+void AChessPlayer::ZoomCamera(const float amount) {
     CameraBoom->TargetArmLength = FMath::Clamp(CameraBoom->TargetArmLength + amount, 75.0f, 200.0f);
 }

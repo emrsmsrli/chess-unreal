@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "ChessPlayer.generated.h"
 
@@ -19,8 +18,7 @@ protected:
 public:
     void Tick(float DeltaTime) override;
     void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-    void ZoomCamera(float amount) const;
+    void ZoomCamera(float amount);
 
 private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
