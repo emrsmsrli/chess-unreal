@@ -4,7 +4,6 @@
 #include "GameFramework/Pawn.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
-#include "Debug.h"
 #include "ChessPlayer.h"
 
 AChessPlayerController::AChessPlayerController() {
@@ -19,10 +18,6 @@ AChessPlayerController::AChessPlayerController() {
 
 void AChessPlayerController::Tick(float DeltaSeconds) {
     if(GEngine) {
-#ifdef DEBUG
-        GEngine->AddOnScreenDebugMessage(4, 0, FColor::Blue, "control rotation " + GetControlRotation().ToString());
-#endif
-
         const auto vp_size = GEngine->GameViewport->Viewport->GetSizeXY();
         if(IsCamControlActive) {
             GEngine->GameViewport->Viewport->SetMouse(vp_size.X / 2, vp_size.Y / 2);
@@ -69,11 +64,6 @@ void AChessPlayerController::OnCameraPitch(const float value) {
     if(!IsCamControlActive)
         return;
 
-#ifdef DEBUG
-    if(GEngine)
-        GEngine->AddOnScreenDebugMessage(1, 0, FColor::Black, "pitch " + FString::SanitizeFloat(value));
-#endif
-
     AddPitchInput(value * GetWorld()->GetDeltaSeconds() * RotationMultiplier);
 }
 
@@ -81,20 +71,11 @@ void AChessPlayerController::OnCameraYaw(const float value) {
     if(!IsCamControlActive)
         return;
 
-#ifdef DEBUG
-    if(GEngine)
-        GEngine->AddOnScreenDebugMessage(2, 0, FColor::Black, "yaw " + FString::SanitizeFloat(value));
-#endif
-
     AddYawInput(value * GetWorld()->GetDeltaSeconds() * RotationMultiplier);
 }
 
 void AChessPlayerController::OnCameraZoom(const float value) {
-#ifdef DEBUG
-    if(GEngine)
-        GEngine->AddOnScreenDebugMessage(3, 0, FColor::Black, "zoom " + FString::SanitizeFloat(value));
-#endif
-
-    auto* pawn = Cast<AChessPlayer>(GetPawn());
-    pawn->ZoomCamera(value * ZoomMultiplier);
+    if(auto* pawn = Cast<AChessPlayer>(GetPawn())) {
+        pawn->ZoomCamera(value * ZoomMultiplier);
+    }
 }
