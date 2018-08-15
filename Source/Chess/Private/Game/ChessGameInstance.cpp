@@ -2,7 +2,7 @@
 
 #include "ChessGameInstance.h"
 #include "Widget.h"
-//#include ""
+#include "OnlineSubsystem.h"
 
 UChessGameInstance::UChessGameInstance() {
     State = EState::START;
@@ -10,4 +10,5 @@ UChessGameInstance::UChessGameInstance() {
 
 bool UChessGameInstance::HostSession(FName SessionName, bool IsLAN) {
     //IOnlineSubsystem
+    return true;
 }
