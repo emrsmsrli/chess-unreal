@@ -8,5 +8,8 @@
 UCLASS()
 class CHESS_API AChessPlayerState : public APlayerState {
 	GENERATED_BODY()
-	
+public:
+    AChessPlayerState();
+
+    FString Name;
 };

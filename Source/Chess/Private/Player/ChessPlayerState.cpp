@@ -2,3 +2,6 @@
 
 #include "ChessPlayerState.h"
 
+AChessPlayerState::AChessPlayerState() {
+    Name = "";
+}

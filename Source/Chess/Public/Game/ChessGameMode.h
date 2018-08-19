@@ -12,4 +12,6 @@ class CHESS_API AChessGameMode : public AGameModeBase {
 	
 public:
     AChessGameMode();
+    void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+    void PostLogin(APlayerController* NewPlayer) override;
 };
