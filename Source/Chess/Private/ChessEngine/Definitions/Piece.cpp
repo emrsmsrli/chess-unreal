@@ -1,22 +1,22 @@
 // Copyright 2018 Emre Simsirli
 
-#include "ChessEngine/Definitions/Piece.h"
-#include "ChessEngine/Definitions/Team.h"
+#include "Piece.h"
+#include "Side.h"
 
 TPiece pieces[] = {
-    {0, ETeam::BOTH, false, false, false, false},
+    {0, ESide::both, false, false, false, false},
 
-    {100, ETeam::WHITE, false, false, false, false},
-    {325, ETeam::WHITE, true, false, false, false},
-    {325, ETeam::WHITE, false, false, false, true},
-    {550, ETeam::WHITE, false, false, true, false},
-    {1000, ETeam::WHITE, false, false, true, true},
-    {50000, ETeam::WHITE, false, true, false, false},
+    {100, ESide::white, false, false, false, false},
+    {325, ESide::white, true, false, false, false},
+    {325, ESide::white, false, false, false, true},
+    {550, ESide::white, false, false, true, false},
+    {1000, ESide::white, false, false, true, true},
+    {50000, ESide::white, false, true, false, false},
 
-    {100, ETeam::BLACK, false, false, false, false},
-    {325, ETeam::BLACK, true, false, false, false},
-    {325, ETeam::BLACK, false, false, false, true},
-    {550, ETeam::BLACK, false, false, true, false},
-    {1000, ETeam::BLACK, false, false, true, true},
-    {50000, ETeam::BLACK, false, true, false, false}
+    {100, ESide::black, false, false, false, false},
+    {325, ESide::black, true, false, false, false},
+    {325, ESide::black, false, false, false, true},
+    {550, ESide::black, false, false, true, false},
+    {1000, ESide::black, false, false, true, true},
+    {50000, ESide::black, false, true, false, false}
 };

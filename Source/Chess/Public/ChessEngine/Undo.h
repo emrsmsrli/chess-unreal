@@ -2,14 +2,21 @@
 
 #pragma once
 
-#include "ChessEngine/Move.h"
+#include "Move.h"
 
-struct FUndo {
+struct FUndo
+{
     TMove move;
     uint32 cast_perm;
     uint32 en_passant_sq;
     uint32 fifty_move_counter;
     uint64 pos_key;
 
-    FUndo(const TMove& m) : move(m) {}
+    explicit FUndo(const TMove& m) : move(m)
+    {
+        cast_perm = 0;
+        en_passant_sq = 0;
+        fifty_move_counter = 0;
+        pos_key = 0;
+    }
 };

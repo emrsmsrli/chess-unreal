@@ -4,7 +4,8 @@
 
 #include "UnrealString.h"
 
-class TMove {
+class TMove
+{
 public:
     static const uint32 flag_en_passant = 0x40000;
     static const uint32 flag_pawn_start = 0x80000;
@@ -18,7 +19,7 @@ private:
     explicit TMove(uint32 m);
 
 public:
-	TMove() : TMove(0) {}
+    TMove() : TMove(0) {}
 
     uint32 from() const;
     uint32 to() const;
@@ -42,5 +43,5 @@ public:
     bool operator!=(const TMove& o) const;
 
 private:
-    uint32 get(uint32 shift, uint32 and) const;
+    uint32 get(uint32 shift, uint32 mask) const;
 };

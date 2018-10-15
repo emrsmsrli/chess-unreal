@@ -1,18 +1,17 @@
 // Copyright 2018 Emre Simsirli
 
-#include "ChessEngine/ChessEngine.h"
-#include "ChessEngine/Board/Bitboard.h"
-#include "ChessEngine/Definitions/PosKey.h"
-#include "ChessEngine/Definitions/Transition.h"
-#include "ChessEngine/Definitions/Square.h"
+#include "ChessEngine.h"
+#include "Bitboard.h"
+#include "Board.h"
+#include "PosKey.h"
+#include "Square.h"
 
-TChessEngine::TChessEngine() {
+TChessEngine::TChessEngine() {}
 
-}
-
-void TChessEngine::Initialize() {
+void TChessEngine::Initialize()
+{
+    ESquare::Initialize();
     TBitboard::Initialize();
     PosKey::Initialize();
-    Transition::Initialize();
-    Square::Initialize();
+    init_mvv_lva();
 }

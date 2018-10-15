@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 
-enum EPieceType {
+enum EPieceType
+{
     empty, wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk
 };
 
-struct TPiece {
+struct TPiece
+{
     bool is_big;
     bool is_major;
     bool is_minor;
@@ -22,15 +24,16 @@ struct TPiece {
     bool is_bishop_queen;
     bool is_sliding;
 
-    TPiece(const uint32 v, const uint8 s, const bool ikn, 
-		  const bool ikg, const bool irq, const bool ibq)
+    TPiece(const uint32 v, const uint8 s, const bool ikn,
+           const bool ikg, const bool irq, const bool ibq)
         : value(v), side(s), is_knight(ikn), is_king(ikg),
-          is_rook_queen(irq), is_bishop_queen(ibq) {
+          is_rook_queen(irq), is_bishop_queen(ibq)
+    {
         is_pawn = value && !is_rook_queen && !is_knight && !is_bishop_queen && !is_king;
         is_big = !is_pawn;
         is_major = is_rook_queen || is_king;
         is_minor = is_knight || is_bishop_queen && !is_rook_queen;
-        is_sliding = !is_pawn && !is_knight;
+        is_sliding = !is_pawn && !is_knight && !is_king;
     }
 };
 

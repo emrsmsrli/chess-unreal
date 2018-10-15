@@ -2,14 +2,28 @@
 
 #pragma once
 
-enum EFile {
-    file_a, file_b, file_c, file_d, file_e, file_f, file_g, file_h, file_none
-};
-
-enum ERank {
-    rank_1, rank_2, rank_3, rank_4, rank_5, rank_6, rank_7, rank_8, rank_none
-};
-
-enum ECastlingPermission {
+enum ECastlingPermission
+{
     c_wk = 1, c_wq = 2, c_bk = 4, c_bq = 8
+};
+
+struct search_info
+{
+    int starttime;
+    int stoptime;
+    int depth;
+    int timeset;
+    int movestogo;
+
+    long nodes;
+
+    int quit;
+    int stopped;
+
+    float fh; // fail high
+    float fhf; // fail high first
+    int nullCut;
+
+    int GAME_MODE;
+    int POST_THINKING;
 };
