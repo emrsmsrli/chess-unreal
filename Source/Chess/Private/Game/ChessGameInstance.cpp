@@ -5,7 +5,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/LocalPlayer.h"
 
-UChessGameInstance::UChessGameInstance() {
+UChessGameInstance::UChessGameInstance()
+{
     State = EState::START;
     OnCreateSessionCompleteDelegate = FOnCreateSessionCompleteDelegate::CreateUObject(
         this, &UChessGameInstance::OnCreateSessionComplete);
@@ -19,22 +20,26 @@ UChessGameInstance::UChessGameInstance() {
         this, &UChessGameInstance::OnDestroySessionComplete);
 }
 
-bool UChessGameInstance::HostSession(const FString name, const bool is_lan) {
+bool UChessGameInstance::HostSession(const FString name, const bool is_lan)
+{
     auto* player = GetFirstGamePlayer();
     return HostSession(player->GetPreferredUniqueNetId().GetUniqueNetId(), name, is_lan);
 }
 
-bool UChessGameInstance::FindSessions(const bool is_lan) {
+bool UChessGameInstance::FindSessions(const bool is_lan)
+{
     auto* player = GetFirstGamePlayer();
     return FindSessions(player->GetPreferredUniqueNetId().GetUniqueNetId(), is_lan);
 }
 
-bool UChessGameInstance::JoinToSession(const FChessSessionSearchResult& search) {
-    auto* Player = GetFirstGamePlayer();
-    return JoinToSession(Player->GetPreferredUniqueNetId().GetUniqueNetId(), search.Result);
+bool UChessGameInstance::JoinToSession(const FChessSessionSearchResult& search)
+{
+    auto* player = GetFirstGamePlayer();
+    return JoinToSession(player->GetPreferredUniqueNetId().GetUniqueNetId(), search.Result);
 }
 
-bool UChessGameInstance::DestroySession() {
+bool UChessGameInstance::DestroySession()
+{
     const auto* online_sub = IOnlineSubsystem::Get();
     if(!online_sub) {
         UE_LOG(LogTemp, Log, TEXT("UChessGameInstance::DestroySession IOnlineSubsystem::Get() nullptr"));
@@ -52,7 +57,8 @@ bool UChessGameInstance::DestroySession() {
 }
 
 bool UChessGameInstance::HostSession(const TSharedPtr<const FUniqueNetId> user_id, const FString session_name,
-                                     const bool is_lan) {
+                                     const bool is_lan)
+{
     const auto* online_sub = IOnlineSubsystem::Get();
     if(!online_sub) {
         UE_LOG(LogTemp, Log, TEXT("UChessGameInstance::HostSession IOnlineSubsystem::Get() nullptr"));
@@ -72,8 +78,8 @@ bool UChessGameInstance::HostSession(const TSharedPtr<const FUniqueNetId> user_i
     SessionSettings->NumPrivateConnections = 0;
     SessionSettings->bAllowJoinInProgress = true;
     SessionSettings->bShouldAdvertise = true;
-	SessionSettings->bAllowJoinViaPresence = true;
-	SessionSettings->bAllowJoinViaPresenceFriendsOnly = false;
+    SessionSettings->bAllowJoinViaPresence = true;
+    SessionSettings->bAllowJoinViaPresenceFriendsOnly = false;
 
     FOnlineSessionSetting lobby_name_setting;
     lobby_name_setting.Data = session_name;
@@ -86,7 +92,8 @@ bool UChessGameInstance::HostSession(const TSharedPtr<const FUniqueNetId> user_i
     return sessions->CreateSession(*user_id, GameSessionName, *SessionSettings);
 }
 
-bool UChessGameInstance::FindSessions(TSharedPtr<const FUniqueNetId> user_id, const bool is_lan) {
+bool UChessGameInstance::FindSessions(TSharedPtr<const FUniqueNetId> user_id, const bool is_lan)
+{
     const auto* online_sub = IOnlineSubsystem::Get();
     if(!online_sub) {
         UE_LOG(LogTemp, Log, TEXT(" UChessGameInstance::FindSessions IOnlineSubsystem::Get() nullptr"));
@@ -112,7 +119,8 @@ bool UChessGameInstance::FindSessions(TSharedPtr<const FUniqueNetId> user_id, co
 }
 
 bool UChessGameInstance::JoinToSession(TSharedPtr<const FUniqueNetId> user_id,
-                                       const FOnlineSessionSearchResult& search_result) {
+                                       const FOnlineSessionSearchResult& search_result)
+{
     const auto* online_sub = IOnlineSubsystem::Get();
     if(!online_sub) {
         UE_LOG(LogTemp, Log, TEXT("UChessGameInstance::JoinToSession IOnlineSubsystem::Get() nullptr"));
@@ -131,7 +139,8 @@ bool UChessGameInstance::JoinToSession(TSharedPtr<const FUniqueNetId> user_id,
     return sessions->JoinSession(*user_id, GameSessionName, search_result);
 }
 
-void UChessGameInstance::OnCreateSessionComplete(const FName session_name, const bool successful) {
+void UChessGameInstance::OnCreateSessionComplete(const FName session_name, const bool successful)
+{
     UE_LOG(LogTemp, Log, TEXT("UChessGameInstance::OnCreateSessionComplete, %s, success: %s"),
         *session_name.ToString(), successful ? TEXT("true") : TEXT("false"));
 
@@ -152,7 +161,8 @@ void UChessGameInstance::OnCreateSessionComplete(const FName session_name, const
     sessions->StartSession(session_name);
 }
 
-void UChessGameInstance::OnStartSessionComplete(const FName session_name, const bool successful) {
+void UChessGameInstance::OnStartSessionComplete(const FName session_name, const bool successful)
+{
     UE_LOG(LogTemp, Log, TEXT("UChessGameInstance::OnStartSessionComplete, %s, success: %s"),
         *session_name.ToString(), successful ? TEXT("true") : TEXT("false"));
 
@@ -166,7 +176,8 @@ void UChessGameInstance::OnStartSessionComplete(const FName session_name, const 
     OnSessionStart(successful);
 }
 
-void UChessGameInstance::OnFindSessionsComplete(const bool successful) {
+void UChessGameInstance::OnFindSessionsComplete(const bool successful)
+{
     UE_LOG(LogTemp, Log, TEXT("UChessGameInstance::OnFindSessionsComplete, success: %s"),
         successful ? TEXT("true") : TEXT("false"));
 
@@ -193,7 +204,8 @@ void UChessGameInstance::OnFindSessionsComplete(const bool successful) {
 }
 
 void UChessGameInstance::OnJoinSessionComplete(const FName session_name,
-                                               const EOnJoinSessionCompleteResult::Type result) {
+                                               const EOnJoinSessionCompleteResult::Type result)
+{
     UE_LOG(LogTemp, Log, TEXT("UChessGameInstance::OnJoinSessionComplete, %s, result: %d"),
         *session_name.ToString(),
         static_cast<int32>(result));
@@ -215,7 +227,8 @@ void UChessGameInstance::OnJoinSessionComplete(const FName session_name,
     OnSessionJoined(result == EOnJoinSessionCompleteResult::Success ? true : false);
 }
 
-void UChessGameInstance::OnDestroySessionComplete(const FName session_name, const bool successful) {
+void UChessGameInstance::OnDestroySessionComplete(const FName session_name, const bool successful)
+{
     UE_LOG(LogTemp, Log, TEXT("UChessGameInstance::OnDestroySessionComplete, %s, success: %s"),
         *session_name.ToString(),
         successful ? TEXT("true") : TEXT("false"));

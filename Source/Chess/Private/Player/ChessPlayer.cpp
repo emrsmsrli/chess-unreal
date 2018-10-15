@@ -5,7 +5,8 @@
 #include "Camera/CameraComponent.h"
 #include "Engine/Engine.h"
 
-AChessPlayer::AChessPlayer() {
+AChessPlayer::AChessPlayer()
+{
     PrimaryActorTick.bCanEverTick = true;
     bUseControllerRotationPitch = true;
     bUseControllerRotationYaw = true;
@@ -19,22 +20,26 @@ AChessPlayer::AChessPlayer() {
     CameraBoom->TargetArmLength = 120.0f;
     CameraBoom->bDoCollisionTest = false;
     CameraBoom->bUsePawnControlRotation = true;
-    
+
     Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 }
 
-void AChessPlayer::BeginPlay() {
+void AChessPlayer::BeginPlay()
+{
     APawn::BeginPlay();
 }
 
-void AChessPlayer::Tick(const float DeltaTime) {
+void AChessPlayer::Tick(const float DeltaTime)
+{
     APawn::Tick(DeltaTime);
 }
-    
-void AChessPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
+
+void AChessPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
     APawn::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AChessPlayer::ZoomCamera(const float amount) {
+void AChessPlayer::ZoomCamera(const float amount)
+{
     CameraBoom->TargetArmLength = FMath::Clamp(CameraBoom->TargetArmLength + amount, 75.0f, 200.0f);
 }

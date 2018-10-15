@@ -6,7 +6,8 @@
 #include "ChessPlayer.generated.h"
 
 UCLASS()
-class CHESS_API AChessPlayer : public APawn {
+class CHESS_API AChessPlayer : public APawn
+{
     GENERATED_BODY()
 
 public:

@@ -6,7 +6,7 @@
 #include "ChessGameState.generated.h"
 
 UCLASS()
-class CHESS_API AChessGameState : public AGameStateBase {
-	GENERATED_BODY()
-	
+class CHESS_API AChessGameState : public AGameStateBase
+{
+    GENERATED_BODY()
 };

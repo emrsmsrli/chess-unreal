@@ -9,7 +9,8 @@
 #include "ChessGameInstance.generated.h"
 
 UCLASS()
-class CHESS_API UChessGameInstance : public UGameInstance {
+class CHESS_API UChessGameInstance : public UGameInstance
+{
     GENERATED_BODY()
 
 public:

@@ -3,23 +3,23 @@
 #pragma once
 
 #include "DestructibleActor.h"
-#include "../Definitions.h"
+#include "Side.h"
 #include "ChessPiece.generated.h"
 
 UCLASS()
-class CHESS_API AChessPiece : public ADestructibleActor {
+class CHESS_API AChessPiece : public ADestructibleActor
+{
     GENERATED_BODY()
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Unit")
-    TEnumAsByte<ETeam::Type> Team;
-	
-public:	
+    TEnumAsByte<ESide::Type> Side;
+
     AChessPiece();
 
 protected:
     void BeginPlay() override;
 
-public:	
+public:
     void Tick(float DeltaTime) override;
 };
