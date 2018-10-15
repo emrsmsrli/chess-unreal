@@ -9,14 +9,16 @@
 #define KEY_LOBBY_NAME FName("Lobby")
 
 USTRUCT(BlueprintType)
-struct FChessSessionSearchResult {
-	GENERATED_BODY()
+struct FChessSessionSearchResult
+{
+    GENERATED_BODY()
 
     FOnlineSessionSearchResult Result;
 };
 
 UCLASS(MinimalApi)
-class UChessSessionResultHelper : public UBlueprintFunctionLibrary {
+class UChessSessionResultHelper : public UBlueprintFunctionLibrary
+{
     GENERATED_BODY()
 
     UFUNCTION(BlueprintPure, Category = "Online|Session")
