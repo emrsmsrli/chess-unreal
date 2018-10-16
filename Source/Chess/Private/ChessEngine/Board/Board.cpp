@@ -168,8 +168,8 @@ void TBoard::reset()
         material_score_[i] = 0;
     }
 
-    for(auto& i : piece_count_)
-        i = 0;
+    for(auto& locs : piece_locations_)
+        locs.SetNum(0);
 
     for(uint32 side = ESide::white; side <= ESide::black; ++side)
         king_sq_[side] = ESquare::no_sq;
@@ -344,9 +344,7 @@ void TBoard::update_material()
             }
 
             material_score_[side] += p.value;
-
-            piece_list_[piece][piece_count_[piece]] = sq;
-            piece_count_[piece]++;
+            piece_locations_[piece].Add(sq);
 
             switch(piece) {
                 case EPieceType::wk:
@@ -445,8 +443,7 @@ TArray<TMove> TBoard::generate_moves()
     TArray<TMove> moves;
 
     if(side_ == ESide::white) {
-        for(uint32 p_count = 0; p_count < piece_count_[EPieceType::wp]; ++p_count) {
-            const auto sq = piece_list_[EPieceType::wp][p_count];
+        for(auto sq : piece_locations_[EPieceType::wp]) {
             MAKE_SURE(Verification::IsSquareOnBoard(sq));
 
             if(b_[sq + 10] == EPieceType::empty) {
@@ -492,8 +489,7 @@ TArray<TMove> TBoard::generate_moves()
             }
         }
     } else {
-        for(uint32 p_count = 0; p_count < piece_count_[EPieceType::bp]; ++p_count) {
-            const auto sq = piece_list_[EPieceType::bp][p_count];
+        for(auto sq : piece_locations_[EPieceType::bp]) {
             MAKE_SURE(Verification::IsSquareOnBoard(sq));
 
             if(b_[sq - 10] == EPieceType::empty) {
@@ -545,9 +541,8 @@ TArray<TMove> TBoard::generate_moves()
         if(piece == EPieceType::empty)
             break;
         MAKE_SURE(Verification::IsPieceValid(piece));
-
-        for(uint32 p_n = 0; p_n < piece_count_[piece]; ++p_n) {
-            const auto sq = piece_list_[piece][p_n];
+        
+        for(auto sq : piece_locations_[piece]) {
             MAKE_SURE(Verification::IsSquareOnBoard(sq));
 
             for(uint32 i = 0; i < num_dir[piece]; ++i) {
@@ -572,9 +567,8 @@ TArray<TMove> TBoard::generate_moves()
         if(piece == EPieceType::empty)
             break;
         MAKE_SURE(Verification::IsPieceValid(piece));
-
-        for(uint32 p_n = 0; p_n < piece_count_[piece]; ++p_n) {
-            const auto sq = piece_list_[piece][p_n];
+        
+        for(auto sq : piece_locations_[piece]) {
             MAKE_SURE(Verification::IsSquareOnBoard(sq));
 
             for(uint32 i = 0; i < num_dir[piece]; ++i) {
@@ -803,12 +797,9 @@ bool TBoard::is_valid()
     for(auto& pc : piece_count)
         pc = 0;
 
-    for(uint32 p = EPieceType::wp; p <= EPieceType::bk; ++p) {
-        for(uint32 n_p = 0; n_p < piece_count_[p]; ++n_p) {
-            const auto sq120 = piece_list_[p][n_p];
-            MAKE_SURE(b_[sq120] == p);
-        }
-    }
+    for(auto& locs : piece_locations_)
+        for(auto sq : locs)
+            MAKE_SURE(b_[sq] == p);
 
     for(uint32 sq64 = 0; sq64 < n_board_squares; sq64++) {
         const auto sq120 = ESquare::Sq120(sq64);
@@ -959,57 +950,50 @@ int32 TBoard::evaluate()
     int32 score = material_score_[ESide::white] - material_score_[ESide::black];
 
     /*~ white pawn ~*/
-    for(uint32 pnum = 0; pnum < piece_count_[EPieceType::wp]; ++pnum) {
-        const auto sq = piece_list_[EPieceType::wp][pnum];
+    for(auto sq : piece_locations_[EPieceType::wp]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score += PawnTable[ESquare::Sq64(sq)];
     }
 
     /*~ black pawn ~*/
-    for(uint32 pnum = 0; pnum < piece_count_[EPieceType::bp]; ++pnum) {
-        const auto sq = piece_list_[EPieceType::bp][pnum];
+    for(auto sq : piece_locations_[EPieceType::bp]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score -= PawnTable[Mirror[ESquare::Sq64(sq)]];
     }
 
     /*~ white knight ~*/
-    for(uint32 pnum = 0; pnum < piece_count_[EPieceType::wn]; ++pnum) {
-        const auto sq = piece_list_[EPieceType::wn][pnum];
+    
+    for(auto sq : piece_locations_[EPieceType::wn]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score += KnightTable[ESquare::Sq64(sq)];
     }
 
     /*~ black knight ~*/
-    for(uint32 pnum = 0; pnum < piece_count_[EPieceType::bn]; ++pnum) {
-        const auto sq = piece_list_[EPieceType::bn][pnum];
+    for(auto sq : piece_locations_[EPieceType::bn]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score -= KnightTable[Mirror[ESquare::Sq64(sq)]];
     }
 
     /*~ white bishop ~*/
-    for(uint32 pnum = 0; pnum < piece_count_[EPieceType::wb]; ++pnum) {
-        const auto sq = piece_list_[EPieceType::wb][pnum];
+    for(auto sq : piece_locations_[EPieceType::wb]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score += BishopTable[ESquare::Sq64(sq)];
     }
 
     /*~ black bishop ~*/
-    for(uint32 pnum = 0; pnum < piece_count_[EPieceType::bb]; ++pnum) {
-        const auto sq = piece_list_[EPieceType::bb][pnum];
+    for(auto sq : piece_locations_[EPieceType::bb]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score -= BishopTable[Mirror[ESquare::Sq64(sq)]];
     }
 
     /*~ white rook ~*/
-    for(uint32 pnum = 0; pnum < piece_count_[EPieceType::wr]; ++pnum) {
-        const auto sq = piece_list_[EPieceType::wr][pnum];
+    for(auto sq : piece_locations_[EPieceType::wr]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score += RookTable[ESquare::Sq64(sq)];
     }
 
     /*~ black rook ~*/
-    for(uint32 pnum = 0; pnum < piece_count_[EPieceType::br]; ++pnum) {
-        const auto sq = piece_list_[EPieceType::br][pnum];
+    for(auto sq : piece_locations_[EPieceType::br]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score -= RookTable[Mirror[ESquare::Sq64(sq)]];
     }
@@ -1147,7 +1131,7 @@ void TBoard::add_piece(const uint32 sq, const uint32 piece)
         pawns_[ESide::both].SetSquare(ESquare::Sq64(sq));
     }
     material_score_[p.side] += p.value;
-    piece_list_[piece][piece_count_[piece]++] = sq;
+    piece_locations_[piece].Add(sq);
 }
 
 void TBoard::move_piece(const uint32 from, const uint32 to)
@@ -1170,9 +1154,9 @@ void TBoard::move_piece(const uint32 from, const uint32 to)
         pawns_[ESide::both].SetSquare(ESquare::Sq64(to));
     }
 
-    for(uint32 i = 0; i < piece_count_[p]; ++i) {
-        if(piece_list_[p][i] == from) {
-            piece_list_[p][i] = to;
+    for(auto& sq : piece_locations_[p]) {
+        if(sq == from) {
+            sq = to;
             break;
         }
     }
@@ -1201,15 +1185,7 @@ void TBoard::clear_piece(const uint32 sq)
         pawns_[ESide::both].ClearSquare(ESquare::Sq64(sq));
     }
 
-    auto t_p = -1;
-    for(uint32 i = 0; i < piece_count_[p]; ++i) {
-        if(piece_list_[p][i] == sq) {
-            t_p = i;
-            break;
-        }
-    }
-    MAKE_SURE(t_p != -1);
-    piece_list_[p][t_p] = piece_list_[p][--piece_count_[p]];
+    piece_locations_[p].RemoveSingleSwap(sq);
 }
 
 void TBoard::add_white_pawn_capture_move(const uint32 from, const uint32 to,

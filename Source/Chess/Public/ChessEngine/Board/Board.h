@@ -38,9 +38,7 @@ class TBoard
 
     uint64 pos_key_;
 
-    // todo change this with these 2 TArray<uint32> piece_list_[n_pieces];
-    uint32 piece_count_[n_pieces];
-    uint32 piece_list_[n_pieces][10];
+    TArray<uint32> piece_locations_[n_pieces];
 
     uint32 search_history_[n_pieces][n_board_squares];
     TMove search_killers_[2][max_depth];
