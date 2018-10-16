@@ -37,10 +37,10 @@ uint32 TBitboard::Pop()
     return btable[fold * 0x783a9b23 >> 26];
 }
 
-uint32 TBitboard::Count() const
+int32 TBitboard::Count() const
 {
     auto board = board_;
-    uint32 count = 0;
+    auto count = 0;
     while(board) {
         board &= board - 1;
         count++;

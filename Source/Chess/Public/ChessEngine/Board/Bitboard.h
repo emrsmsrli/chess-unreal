@@ -12,7 +12,7 @@ public:
     void SetSquare(uint32 sq);
     void ClearSquare(uint32 sq);
     uint32 Pop();
-    uint32 Count() const;
+    int32 Count() const;
     void Empty();
     bool IsEmpty() const;
     FString ToString() const;
