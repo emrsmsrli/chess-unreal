@@ -133,7 +133,7 @@ void TMoveGenerator::generate_castling_moves(TArray<TMove>& moves)
     if(ref_->side_ == ESide::white) {
         if(ref_->cast_perm_ & ECastlingPermission::c_wk) {
             if(ref_->b_[ESquare::f1] == empty && ref_->b_[ESquare::g1] == empty) {
-                if(!is_attacked(ESquare::e1, ESide::black) && !is_attacked(ESquare::f1, ESide::black)) {
+                if(!ref_->is_attacked(ESquare::e1, ESide::black) && !ref_->is_attacked(ESquare::f1, ESide::black)) {
                     add_quiet_move(TMove::create(ESquare::e1, ESquare::g1, empty, empty,
                                                  TMove::flag_castling), moves);
                 }
@@ -144,7 +144,7 @@ void TMoveGenerator::generate_castling_moves(TArray<TMove>& moves)
             if(ref_->b_[ESquare::d1] == empty
                 && ref_->b_[ESquare::c1] == empty
                 && ref_->b_[ESquare::b1] == empty) {
-                if(!is_attacked(ESquare::e1, ESide::black) && !is_attacked(ESquare::d1, ESide::black)) {
+                if(!ref_->is_attacked(ESquare::e1, ESide::black) && !ref_->is_attacked(ESquare::d1, ESide::black)) {
                     add_quiet_move(TMove::create(ESquare::e1, ESquare::c1, empty, empty,
                                                  TMove::flag_castling), moves);
                 }
@@ -154,7 +154,7 @@ void TMoveGenerator::generate_castling_moves(TArray<TMove>& moves)
         if(ref_->cast_perm_ & ECastlingPermission::c_bk) {
             if(ref_->b_[ESquare::f8] == empty
                 && ref_->b_[ESquare::g8] == empty) {
-                if(!is_attacked(ESquare::e8, ESide::white) && !is_attacked(ESquare::f8, ESide::white)) {
+                if(!ref_->is_attacked(ESquare::e8, ESide::white) && !ref_->is_attacked(ESquare::f8, ESide::white)) {
                     add_quiet_move(TMove::create(ESquare::e8, ESquare::g8, empty, empty,
                                                  TMove::flag_castling), moves);
                 }
@@ -165,7 +165,7 @@ void TMoveGenerator::generate_castling_moves(TArray<TMove>& moves)
             if(ref_->b_[ESquare::d8] == empty
                 && ref_->b_[ESquare::c8] == empty
                 && ref_->b_[ESquare::b8] == empty) {
-                if(!is_attacked(ESquare::e8, ESide::white) && !is_attacked(ESquare::d8, ESide::white)) {
+                if(!ref_->is_attacked(ESquare::e8, ESide::white) && !ref_->is_attacked(ESquare::d8, ESide::white)) {
                     add_quiet_move(TMove::create(ESquare::e8, ESquare::c8, empty, empty,
                                                  TMove::flag_castling), moves);
                 }

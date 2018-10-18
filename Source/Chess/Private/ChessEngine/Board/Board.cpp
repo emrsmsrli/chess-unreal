@@ -121,8 +121,8 @@ void TBoard::reset()
     for(auto& locs : piece_locations_)
         locs.SetNum(0);
 
-    for(uint32 side = ESide::white; side <= ESide::black; ++side)
-        king_sq_[side] = ESquare::no_sq;
+    for(auto& k_sq : king_sq_)
+        k_sq = ESquare::no_sq;
 
     history_.Reset();
     side_ = ESide::both;
@@ -517,7 +517,7 @@ bool TBoard::move_exists(const TMove& m)
     return false;
 }
 
-bool TBoard::is_attacked(const uint32 sq, const uint32 attacking_side) const
+bool TBoard::is_attacked(const uint32 sq, const uint8 attacking_side) const
 {
     MAKE_SURE(Verification::IsSquareOnBoard(sq));
     MAKE_SURE(Verification::IsSideValid(attacking_side));
@@ -875,7 +875,7 @@ int32 TBoard::quiescence(int32 alpha, int32 beta, search_info& info)
 
 bool TBoard::has_repetition()
 {
-    for(int32 i = history_.Num() - fifty_move_counter_; i < history_.Num() - 1; ++i) {
+    for(auto i = history_.Num() - fifty_move_counter_; i < history_.Num() - 1; ++i) {
         if(history_[i].pos_key == pos_key_)
             return true;
     }
