@@ -24,10 +24,12 @@ struct TPiece
     bool is_bishop_queen;
     bool is_sliding;
 
+    TArray<int32> move_directions;
+
     TPiece(const uint32 v, const uint8 s, const bool ikn,
-           const bool ikg, const bool irq, const bool ibq)
+           const bool ikg, const bool irq, const bool ibq, const TArray<int32> mdirs)
         : value(v), side(s), is_knight(ikn), is_king(ikg),
-          is_rook_queen(irq), is_bishop_queen(ibq)
+          is_rook_queen(irq), is_bishop_queen(ibq), move_directions(mdirs)
     {
         is_pawn = value && !is_rook_queen && !is_knight && !is_bishop_queen && !is_king;
         is_big = !is_pawn;

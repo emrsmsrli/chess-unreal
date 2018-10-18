@@ -15,8 +15,6 @@ public:
     TArray<TMove> generate_moves();
     TArray<TMove> generate_moves(uint32 sq);
 
-    bool is_attacked(uint32 sq, uint32 attacking_side) const;
-
     static void Initialize();
 
 private:

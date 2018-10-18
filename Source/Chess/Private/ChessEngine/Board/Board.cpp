@@ -517,9 +517,67 @@ bool TBoard::move_exists(const TMove& m)
     return false;
 }
 
-bool TBoard::is_attacked(const uint32 sq, const uint32 side) const
+bool TBoard::is_attacked(const uint32 sq, const uint32 attacking_side) const
 {
-    return move_generator_.is_attacked(sq, side);
+    MAKE_SURE(Verification::IsSquareOnBoard(sq));
+    MAKE_SURE(Verification::IsSideValid(attacking_side));
+    MAKE_SURE(is_valid());
+
+    // pawns
+    if(attacking_side == ESide::white) {
+        if(b_[sq - 11] == wp || b_[sq - 9] == wp)
+            return true;
+    } else {
+        if(b_[sq + 11] == bp || b_[sq + 9] == bp)
+            return true;
+    }
+
+    // knights
+    for(auto dir : pieces[wn].move_directions) {
+        const auto p = b_[sq + dir];
+        const auto piece = pieces[p];
+        if(p != ESquare::offboard && piece.is_knight && piece.side == attacking_side)
+            return true;
+    }
+
+    // rooks & queens
+    for(auto dir : pieces[wr].move_directions) {
+        auto sqq = sq + dir;
+        auto piece = b_[sqq];
+        while(piece != ESquare::offboard) {
+            if(piece != empty) {
+                if(pieces[piece].is_rook_queen && pieces[piece].side == attacking_side)
+                    return true;
+                break;
+            }
+            sqq += dir;
+            piece = b_[sqq];
+        }
+    }
+
+    // bishops & queens
+    for(auto dir : pieces[wb].move_directions) {
+        auto sqq = sq + dir;
+        auto piece = b_[sqq];
+        while(piece != ESquare::offboard) {
+            if(piece != empty) {
+                if(pieces[piece].is_bishop_queen && pieces[piece].side == attacking_side)
+                    return true;
+                break;
+            }
+            sqq += dir;
+            piece = b_[sqq];
+        }
+    }
+
+    // kings
+    for(auto dir : pieces[wk].move_directions) {
+        const auto piece = b_[sq + dir];
+        if(piece != ESquare::offboard && pieces[piece].is_king && pieces[piece].side == attacking_side)
+            return true;
+    }
+
+    return false;
 }
 
 bool TBoard::is_valid()

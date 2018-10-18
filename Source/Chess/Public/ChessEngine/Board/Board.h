@@ -54,7 +54,7 @@ public:
     void take_move();
     bool move_exists(const TMove& m);
 
-    bool is_attacked(uint32 sq, uint32 side) const;
+    bool is_attacked(uint32 sq, uint32 attacking_side) const;
 
     bool is_valid();
     FString ToString() const;

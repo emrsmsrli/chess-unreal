@@ -10,23 +10,7 @@
 using ::EPieceType;
 
 namespace
-{
-    const TArray<int32> move_directions[n_pieces] = {
-        {}, // empty
-        {}, // pawn
-        {-8, -19, -21, -12, 8, 19, 21, 12},
-        {-9, -11, 11, 9},
-        {-1, -10, 1, 10},
-        {-1, -10, 1, 10, -9, -11, 11, 9},
-        {-1, -10, 1, 10, -9, -11, 11, 9},
-        {}, // bpawn
-        {-8, -19, -21, -12, 8, 19, 21, 12},
-        {-9, -11, 11, 9},
-        {-1, -10, 1, 10},
-        {-1, -10, 1, 10, -9, -11, 11, 9},
-        {-1, -10, 1, 10, -9, -11, 11, 9},
-    };
-    
+{    
     const uint32 victim_score[] = {0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600};
     int32 mvv_lva_scores[n_pieces][n_pieces];
 }
@@ -78,69 +62,6 @@ TArray<TMove> TMoveGenerator::generate_moves(const uint32 sq)
     return moves;
 }
 
-bool TMoveGenerator::is_attacked(const uint32 sq, const uint32 attacking_side) const
-{
-    MAKE_SURE(Verification::IsSquareOnBoard(sq));
-    MAKE_SURE(Verification::IsSideValid(attacking_side));
-    MAKE_SURE(ref_->is_valid());
-
-    // pawns
-    if(attacking_side == ESide::white) {
-        if(ref_->b_[sq - 11] == wp || ref_->b_[sq - 9] == wp)
-            return true;
-    } else {
-        if(ref_->b_[sq + 11] == bp || ref_->b_[sq + 9] == bp)
-            return true;
-    }
-
-    // knights
-    for(auto dir : move_directions[wn]) {
-        const auto p = ref_->b_[sq + dir];
-        const auto piece = pieces[p];
-        if(p != ESquare::offboard && piece.is_knight && piece.side == attacking_side)
-            return true;
-    }
-
-    // rooks & queens
-    for(auto dir : move_directions[wr]) {
-        auto sqq = sq + dir;
-        auto piece = ref_->b_[sqq];
-        while(piece != ESquare::offboard) {
-            if(piece != empty) {
-                if(pieces[piece].is_rook_queen && pieces[piece].side == attacking_side)
-                    return true;
-                break;
-            }
-            sqq += dir;
-            piece = ref_->b_[sqq];
-        }
-    }
-
-    // bishops & queens
-    for(auto dir : move_directions[wb]) {
-        auto sqq = sq + dir;
-        auto piece = ref_->b_[sqq];
-        while(piece != ESquare::offboard) {
-            if(piece != empty) {
-                if(pieces[piece].is_bishop_queen && pieces[piece].side == attacking_side)
-                    return true;
-                break;
-            }
-            sqq += dir;
-            piece = ref_->b_[sqq];
-        }
-    }
-
-    // kings
-    for(auto dir : move_directions[wk]) {
-        const auto piece = ref_->b_[sq + dir];
-        if(piece != ESquare::offboard && pieces[piece].is_king && pieces[piece].side == attacking_side)
-            return true;
-    }
-
-    return false;
-}
-
 void TMoveGenerator::generate_pawn_moves(const uint32 sq, TArray<TMove>& moves)
 {
     MAKE_SURE(Verification::IsSquareOnBoard(sq));
@@ -173,7 +94,7 @@ void TMoveGenerator::generate_sliding_moves(const uint32 sq, TArray<TMove>& move
     const auto piece = ref_->b_[sq];
     const auto other_side = ref_->side_ ^ 1;
 
-    for(auto dir : move_directions[piece]) {
+    for(auto dir : pieces[piece].move_directions) {
         auto sqq = sq + dir;
 
         while(Verification::IsSquareOnBoard(sqq)) {
@@ -192,7 +113,7 @@ void TMoveGenerator::generate_non_sliding_moves(const uint32 sq, TArray<TMove>& 
 {
     const auto piece = ref_->b_[sq];
     const auto other_side = ref_->side_ ^ 1;
-    for(auto dir : move_directions[piece]) {
+    for(auto dir : pieces[piece].move_directions) {
         const auto sqq = sq + dir;
 
         if(!Verification::IsSquareOnBoard(sqq))
