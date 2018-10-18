@@ -79,44 +79,6 @@ namespace
         0, 1, 2, 3, 4, 5, 6, 7
     };
 
-    const int32 direction_knight[] = {-8, -19, -21, -12, 8, 19, 21, 12};
-    const int32 direction_rook[] = {-1, -10, 1, 10};
-    const int32 direction_bishop[] = {-9, -11, 11, 9};
-    const int32 direction_king[] = {-1, -10, 1, 10, -9, -11, 11, 9};
-
-    const int32 l_sliding_pieces[] = {
-        EPieceType::wb, EPieceType::wr, EPieceType::wq, 0,
-        EPieceType::bb, EPieceType::br, EPieceType::bq, 0
-    };
-
-    const int32 l_non_sliding_pieces[] = {
-        EPieceType::wn, EPieceType::wk, 0,
-        EPieceType::bn, EPieceType::bk, 0
-    };
-
-    const int32 l_slide_index[] = {0, 4};
-    const int32 l_non_slide_index[] = {0, 3};
-
-    const int32 piece_directions[][8] = {
-        {0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0},
-        {-8, -19, -21, -12, 8, 19, 21, 12},
-        {-9, -11, 11, 9, 0, 0, 0, 0},
-        {-1, -10, 1, 10, 0, 0, 0, 0},
-        {-1, -10, 1, 10, -9, -11, 11, 9},
-        {-1, -10, 1, 10, -9, -11, 11, 9},
-        {0, 0, 0, 0, 0, 0, 0, 0},
-        {-8, -19, -21, -12, 8, 19, 21, 12},
-        {-9, -11, 11, 9, 0, 0, 0, 0},
-        {-1, -10, 1, 10, 0, 0, 0, 0},
-        {-1, -10, 1, 10, -9, -11, 11, 9},
-        {-1, -10, 1, 10, -9, -11, 11, 9},
-    };
-
-    const uint32 num_dir[] = {
-        0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8
-    };
-
     const uint32 castle_perm[120] = {
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
@@ -131,18 +93,6 @@ namespace
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15
     };
-
-    const uint32 victim_score[] = {0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600};
-    int32 mvv_lva_scores[n_pieces][n_pieces];
-}
-
-void init_mvv_lva()
-{
-    for(uint32 attacker = EPieceType::wp; attacker <= EPieceType::bk; attacker++) {
-        for(uint32 victim = EPieceType::wp; victim <= EPieceType::bk; victim++) {
-            mvv_lva_scores[victim][attacker] = victim_score[victim] + 6 - victim_score[attacker] / 100;
-        }
-    }
 }
 
 TBoard::TBoard()
@@ -367,228 +317,14 @@ void TBoard::update_material()
     }
 }
 
-bool TBoard::is_attacked(const uint32 sq, const uint32 attacking_side)
-{
-    MAKE_SURE(Verification::IsSquareOnBoard(sq));
-    MAKE_SURE(Verification::IsSideValid(attacking_side));
-    MAKE_SURE(is_valid());
-
-    // pawns
-    if(attacking_side == ESide::white) {
-        if(b_[sq - 11] == EPieceType::wp || b_[sq - 9] == EPieceType::wp)
-            return true;
-    } else {
-        if(b_[sq + 11] == EPieceType::bp || b_[sq + 9] == EPieceType::bp)
-            return true;
-    }
-
-    // knights
-    for(auto dir : direction_knight) {
-        const auto p = b_[sq + dir];
-        const auto piece = pieces[p];
-        if(p != ESquare::offboard && piece.is_knight && piece.side == attacking_side)
-            return true;
-    }
-
-    // rooks & queens
-    for(auto dir : direction_rook) {
-        auto sqq = sq + dir;
-        auto piece = b_[sqq];
-        while(piece != ESquare::offboard) {
-            if(piece != EPieceType::empty) {
-                if(pieces[piece].is_rook_queen && pieces[piece].side == attacking_side)
-                    return true;
-                break;
-            }
-            sqq += dir;
-            piece = b_[sqq];
-        }
-    }
-
-    // bishops & queens
-    for(auto dir : direction_bishop) {
-        auto sqq = sq + dir;
-        auto piece = b_[sqq];
-        while(piece != ESquare::offboard) {
-            if(piece != EPieceType::empty) {
-                if(pieces[piece].is_bishop_queen && pieces[piece].side == attacking_side)
-                    return true;
-                break;
-            }
-            sqq += dir;
-            piece = b_[sqq];
-        }
-    }
-
-    // kings
-    for(auto dir : direction_king) {
-        const auto piece = b_[sq + dir];
-        if(piece != ESquare::offboard && pieces[piece].is_king && pieces[piece].side == attacking_side)
-            return true;
-    }
-
-    return false;
-}
-
-//~ todo refactor with going through all valid pieces
-// use piece_list_[];
-//~ generate_white_moves();
-//~ generate_black_moves();
-//~ generate_moves(sq);
-//~ generate_pawn_moves(sq);
-//~ generate_sliding_moves(sq);
 TArray<TMove> TBoard::generate_moves()
 {
-    MAKE_SURE(is_valid());
-    TArray<TMove> moves;
+    return move_generator_.generate_moves();
+}
 
-    if(side_ == ESide::white) {
-        for(auto sq : piece_locations_[EPieceType::wp]) {
-            MAKE_SURE(Verification::IsSquareOnBoard(sq));
-
-            if(b_[sq + 10] == EPieceType::empty) {
-                add_white_pawn_move(sq, sq + 10, moves);
-                if(ESquare::Rank(sq) == ERank::rank_2 && b_[sq + 20] == EPieceType::empty)
-                    add_quiet_move(TMove::create(sq, sq + 20, EPieceType::empty,
-                                                 EPieceType::empty, TMove::flag_pawn_start), moves);
-            }
-
-            if(Verification::IsSquareOnBoard(sq + 9) && pieces[b_[sq + 9]].side == ESide::black)
-                add_white_pawn_capture_move(sq, sq + 9, b_[sq + 9], moves);
-            if(Verification::IsSquareOnBoard(sq + 11) && pieces[b_[sq + 11]].side == ESide::black)
-                add_white_pawn_capture_move(sq, sq + 11, b_[sq + 11], moves);
-
-            if(en_passant_sq_ != ESquare::no_sq) {
-                if(sq + 9 == en_passant_sq_)
-                    add_en_passant_move(TMove::create(sq, sq + 9, EPieceType::empty, EPieceType::empty,
-                                                      TMove::flag_en_passant), moves);
-                else if(sq + 11 == en_passant_sq_)
-                    add_en_passant_move(TMove::create(sq, sq + 11, EPieceType::empty, EPieceType::empty,
-                                                      TMove::flag_en_passant), moves);
-            }
-        }
-
-        if(cast_perm_ & ECastlingPermission::c_wk) {
-            if(b_[ESquare::f1] == EPieceType::empty
-                && b_[ESquare::g1] == EPieceType::empty) {
-                if(!is_attacked(ESquare::e1, ESide::black) && !is_attacked(ESquare::f1, ESide::black)) {
-                    add_quiet_move(TMove::create(ESquare::e1, ESquare::g1, EPieceType::empty, EPieceType::empty,
-                                                 TMove::flag_castling), moves);
-                }
-            }
-        }
-
-        if(cast_perm_ & ECastlingPermission::c_wq) {
-            if(b_[ESquare::d1] == EPieceType::empty
-                && b_[ESquare::c1] == EPieceType::empty
-                && b_[ESquare::b1] == EPieceType::empty) {
-                if(!is_attacked(ESquare::e1, ESide::black) && !is_attacked(ESquare::d1, ESide::black)) {
-                    add_quiet_move(TMove::create(ESquare::e1, ESquare::c1, EPieceType::empty, EPieceType::empty,
-                                                 TMove::flag_castling), moves);
-                }
-            }
-        }
-    } else {
-        for(auto sq : piece_locations_[EPieceType::bp]) {
-            MAKE_SURE(Verification::IsSquareOnBoard(sq));
-
-            if(b_[sq - 10] == EPieceType::empty) {
-                add_black_pawn_move(sq, sq - 10, moves);
-                if(ESquare::Rank(sq) == ERank::rank_7 && b_[sq - 20] == EPieceType::empty)
-                    add_quiet_move(TMove::create(sq, sq - 20, EPieceType::empty,
-                                                 EPieceType::empty, TMove::flag_pawn_start), moves);
-            }
-
-            if(Verification::IsSquareOnBoard(sq - 9) && pieces[b_[sq - 9]].side == ESide::white)
-                add_black_pawn_capture_move(sq, sq - 9, b_[sq - 9], moves);
-            if(Verification::IsSquareOnBoard(sq - 11) && pieces[b_[sq - 11]].side == ESide::white)
-                add_black_pawn_capture_move(sq, sq - 11, b_[sq - 11], moves);
-
-            if(en_passant_sq_ != ESquare::no_sq) {
-                if(sq - 9 == en_passant_sq_)
-                    add_en_passant_move(TMove::create(sq, sq - 9, EPieceType::empty, EPieceType::empty,
-                                                      TMove::flag_en_passant), moves);
-                else if(sq - 11 == en_passant_sq_)
-                    add_en_passant_move(TMove::create(sq, sq - 11, EPieceType::empty, EPieceType::empty,
-                                                      TMove::flag_en_passant), moves);
-            }
-        }
-
-        if(cast_perm_ & ECastlingPermission::c_bk) {
-            if(b_[ESquare::f8] == EPieceType::empty
-                && b_[ESquare::g8] == EPieceType::empty) {
-                if(!is_attacked(ESquare::e8, ESide::white) && !is_attacked(ESquare::f8, ESide::white)) {
-                    add_quiet_move(TMove::create(ESquare::e8, ESquare::g8, EPieceType::empty, EPieceType::empty,
-                                                 TMove::flag_castling), moves);
-                }
-            }
-        }
-
-        if(cast_perm_ & ECastlingPermission::c_bq) {
-            if(b_[ESquare::d8] == EPieceType::empty
-                && b_[ESquare::c8] == EPieceType::empty
-                && b_[ESquare::b8] == EPieceType::empty) {
-                if(!is_attacked(ESquare::e8, ESide::white) && !is_attacked(ESquare::d8, ESide::white)) {
-                    add_quiet_move(TMove::create(ESquare::e8, ESquare::c8, EPieceType::empty, EPieceType::empty,
-                                                 TMove::flag_castling), moves);
-                }
-            }
-        }
-    }
-
-    for(uint32 s_i = l_slide_index[side_]; ; s_i++) {
-        const auto piece = l_sliding_pieces[s_i];
-        if(piece == EPieceType::empty)
-            break;
-        MAKE_SURE(Verification::IsPieceValid(piece));
-        
-        for(auto sq : piece_locations_[piece]) {
-            MAKE_SURE(Verification::IsSquareOnBoard(sq));
-
-            for(uint32 i = 0; i < num_dir[piece]; ++i) {
-                const auto dir = piece_directions[piece][i];
-                auto sqq = sq + dir;
-
-                while(Verification::IsSquareOnBoard(sqq)) {
-                    if(b_[sqq] != EPieceType::empty) {
-                        if(pieces[b_[sqq]].side == (side_ ^ 1))
-                            add_capture_move(TMove::create(sq, sqq, b_[sqq], EPieceType::empty, 0), moves);
-                        break;
-                    }
-                    add_quiet_move(TMove::create(sq, sqq, EPieceType::empty, EPieceType::empty, 0), moves);
-                    sqq += dir;
-                }
-            }
-        }
-    }
-
-    for(uint32 s_i = l_non_slide_index[side_]; ; s_i++) {
-        const auto piece = l_non_sliding_pieces[s_i];
-        if(piece == EPieceType::empty)
-            break;
-        MAKE_SURE(Verification::IsPieceValid(piece));
-        
-        for(auto sq : piece_locations_[piece]) {
-            MAKE_SURE(Verification::IsSquareOnBoard(sq));
-
-            for(uint32 i = 0; i < num_dir[piece]; ++i) {
-                const auto dir = piece_directions[piece][i];
-                const auto sqq = sq + dir;
-
-                if(!Verification::IsSquareOnBoard(sqq))
-                    continue;
-
-                if(b_[sqq] != EPieceType::empty) {
-                    if(pieces[b_[sqq]].side == (side_ ^ 1))
-                        add_capture_move(TMove::create(sq, sqq, b_[sqq], EPieceType::empty, 0), moves);
-                    continue;
-                }
-                add_quiet_move(TMove::create(sq, sqq, EPieceType::empty, EPieceType::empty, 0), moves);
-            }
-        }
-    }
-
-    return moves;
+TArray<TMove> TBoard::generate_moves(const uint32 sq)
+{
+    return move_generator_.generate_moves(sq);
 }
 
 bool TBoard::make_move(const TMove& m)
@@ -781,9 +517,14 @@ bool TBoard::move_exists(const TMove& m)
     return false;
 }
 
+bool TBoard::is_attacked(const uint32 sq, const uint32 side) const
+{
+    return move_generator_.is_attacked(sq, side);
+}
+
 bool TBoard::is_valid()
 {
-    uint32 piece_count[n_pieces];
+    int32 piece_count[n_pieces];
     uint32 n_big_pieces[2] = {0, 0};
     uint32 n_major_pieces[2] = {0, 0};
     uint32 n_minor_pieces[2] = {0, 0};
@@ -797,8 +538,8 @@ bool TBoard::is_valid()
     for(auto& pc : piece_count)
         pc = 0;
 
-    for(auto& locs : piece_locations_)
-        for(auto sq : locs)
+    for(uint32 p = EPieceType::wp; p <= EPieceType::bk; ++p)
+        for(auto sq : piece_locations_[p])
             MAKE_SURE(b_[sq] == p);
 
     for(uint32 sq64 = 0; sq64 < n_board_squares; sq64++) {
@@ -820,12 +561,13 @@ bool TBoard::is_valid()
     }
 
     for(uint32 p = EPieceType::wp; p <= EPieceType::bk; ++p) {
-        MAKE_SURE(piece_count[p] == piece_count_[p]);
+        MAKE_SURE(piece_count[p] == piece_locations_[p].Num());
     }
 
-    MAKE_SURE(pawns[ESide::white].Count() == piece_count_[EPieceType::wp]);
-    MAKE_SURE(pawns[ESide::black].Count() == piece_count_[EPieceType::bp]);
-    MAKE_SURE(pawns[ESide::both].Count() == piece_count_[EPieceType::wp] + piece_count_[EPieceType::bp]);
+    MAKE_SURE(pawns[ESide::white].Count() == piece_locations_[EPieceType::wp].Num());
+    MAKE_SURE(pawns[ESide::black].Count() == piece_locations_[EPieceType::bp].Num());
+    MAKE_SURE(pawns[ESide::both].Count() == piece_locations_[EPieceType::wp].Num() 
+		+ piece_locations_[EPieceType::bp].Num());
 
     while(!pawns[ESide::white].IsEmpty()) {
         const auto sq64 = pawns[ESide::white].Pop();
@@ -905,44 +647,15 @@ void TBoard::perft(const int32 depth, int64* leaf_nodes)
 FString TBoard::perf_test(const int32 depth)
 {
     MAKE_SURE(is_valid());
-    //auto str = "D" + FString::FromInt(depth); //"starting perft, depth: " + FString::FromInt(depth) + '\n';
     int64 leaf_nodes = 0;
     auto moves = generate_moves();
     for(auto& m : moves) {
         if(!make_move(m))
             continue;
-        const auto cumulative_nodes = leaf_nodes;
         perft(depth - 1, &leaf_nodes);
         take_move();
-
-        const auto old_nodes = leaf_nodes - cumulative_nodes;
-        //str += FString::Printf(TEXT("move: %d-%d : %ld\n"), m.from(), m.to(), old_nodes);
     }
     return FString::Printf(TEXT(" ;D%d %d"), depth, leaf_nodes);
-    //"test complete: " + FString::FromInt(leaf_nodes) + " visited";
-}
-
-void TBoard::clearforsearch(search_info& info)
-{
-    for(auto& i : search_history_) {
-        for(auto& j : i) {
-            j = 0;
-        }
-    }
-
-    for(auto& i : search_killers_) {
-        for(auto& j : i) {
-            j = TMove::no_move;
-        }
-    }
-
-    pv_table_.empty();
-    ply_ = 0;
-    info.starttime = 0; // todo get time from statics
-    info.stopped = 0;
-    info.nodes = 0;
-    info.fhf = 0;
-    info.fh = 0;
 }
 
 int32 TBoard::evaluate()
@@ -1003,7 +716,8 @@ int32 TBoard::evaluate()
 
 void TBoard::search(search_info& info)
 {
-    clearforsearch(info);
+    pv_table_.empty();
+    ply_ = 0;
 
     //~ iterative deepening
     for(auto depth = 1; depth <= info.depth; ++depth) {
@@ -1070,8 +784,7 @@ int32 TBoard::alpha_beta(int32 alpha, const int32 beta, const uint32 depth,
                 info.fh++;
 
                 if(!move.is_captured()) {
-                    search_killers_[1][ply_] = search_killers_[0][ply_];
-                    search_killers_[0][ply_] = move;
+                    info.add_killer(ply_, move);
                 }
 
                 return beta;
@@ -1080,7 +793,7 @@ int32 TBoard::alpha_beta(int32 alpha, const int32 beta, const uint32 depth,
             best_move = move;
 
             if(!move.is_captured()) {
-                search_history_[b_[best_move.from()]][best_move.to()] += depth;
+                info.history[b_[best_move.from()]][best_move.to()] += depth;
 			}
         }
     }
@@ -1186,92 +899,4 @@ void TBoard::clear_piece(const uint32 sq)
     }
 
     piece_locations_[p].RemoveSingleSwap(sq);
-}
-
-void TBoard::add_white_pawn_capture_move(const uint32 from, const uint32 to,
-                                         const uint32 captured, TArray<TMove>& moves)
-{
-    MAKE_SURE(Verification::IsPieceValidOrEmpty(captured));
-    MAKE_SURE(Verification::IsSquareOnBoard(from));
-    MAKE_SURE(Verification::IsSquareOnBoard(to));
-
-    if(ESquare::Rank(from) == ERank::rank_7) {
-        add_capture_move(TMove::create(from, to, captured, EPieceType::wq, 0), moves);
-        add_capture_move(TMove::create(from, to, captured, EPieceType::wr, 0), moves);
-        add_capture_move(TMove::create(from, to, captured, EPieceType::wb, 0), moves);
-        add_capture_move(TMove::create(from, to, captured, EPieceType::wn, 0), moves);
-    } else {
-        add_capture_move(TMove::create(from, to, captured, EPieceType::empty, 0), moves);
-    }
-}
-
-void TBoard::add_white_pawn_move(const uint32 from, const uint32 to, TArray<TMove>& moves)
-{
-    MAKE_SURE(Verification::IsSquareOnBoard(from));
-    MAKE_SURE(Verification::IsSquareOnBoard(to));
-
-    if(ESquare::Rank(from) == ERank::rank_7) {
-        add_quiet_move(TMove::create(from, to, EPieceType::empty, EPieceType::wq, 0), moves);
-        add_quiet_move(TMove::create(from, to, EPieceType::empty, EPieceType::wr, 0), moves);
-        add_quiet_move(TMove::create(from, to, EPieceType::empty, EPieceType::wb, 0), moves);
-        add_quiet_move(TMove::create(from, to, EPieceType::empty, EPieceType::wn, 0), moves);
-    } else {
-        add_quiet_move(TMove::create(from, to, EPieceType::empty, EPieceType::empty, 0), moves);
-    }
-}
-
-void TBoard::add_black_pawn_capture_move(const uint32 from, const uint32 to,
-                                         const uint32 captured, TArray<TMove>& moves)
-{
-    MAKE_SURE(Verification::IsPieceValidOrEmpty(captured));
-    MAKE_SURE(Verification::IsSquareOnBoard(from));
-    MAKE_SURE(Verification::IsSquareOnBoard(to));
-
-    if(ESquare::Rank(from) == ERank::rank_2) {
-        add_capture_move(TMove::create(from, to, captured, EPieceType::bq, 0), moves);
-        add_capture_move(TMove::create(from, to, captured, EPieceType::br, 0), moves);
-        add_capture_move(TMove::create(from, to, captured, EPieceType::bb, 0), moves);
-        add_capture_move(TMove::create(from, to, captured, EPieceType::bn, 0), moves);
-    } else {
-        add_capture_move(TMove::create(from, to, captured, EPieceType::empty, 0), moves);
-    }
-}
-
-void TBoard::add_black_pawn_move(const uint32 from, const uint32 to, TArray<TMove>& moves)
-{
-    MAKE_SURE(Verification::IsSquareOnBoard(from));
-    MAKE_SURE(Verification::IsSquareOnBoard(to));
-
-    if(ESquare::Rank(from) == ERank::rank_2) {
-        add_quiet_move(TMove::create(from, to, EPieceType::empty, EPieceType::bq, 0), moves);
-        add_quiet_move(TMove::create(from, to, EPieceType::empty, EPieceType::br, 0), moves);
-        add_quiet_move(TMove::create(from, to, EPieceType::empty, EPieceType::bb, 0), moves);
-        add_quiet_move(TMove::create(from, to, EPieceType::empty, EPieceType::bn, 0), moves);
-    } else {
-        add_quiet_move(TMove::create(from, to, EPieceType::empty, EPieceType::empty, 0), moves);
-    }
-}
-
-void TBoard::add_quiet_move(TMove move, TArray<TMove>& moves)
-{
-    if(search_killers_[0][ply_] == move) {
-        move.set_score(900000);
-    } else if(search_killers_[1][ply_] == move) {
-        move.set_score(800000);
-    } else {
-        move.set_score(search_history_[b_[move.from()]][move.to()]);
-    }
-    moves.Add(move);
-}
-
-void TBoard::add_capture_move(TMove move, TArray<TMove>& moves)
-{
-    move.set_score(mvv_lva_scores[move.captured_piece()][b_[move.from()]] + 1000000);
-    moves.Add(move);
-}
-
-void TBoard::add_en_passant_move(TMove move, TArray<TMove>& moves)
-{
-    move.set_score(105 + 1000000);
-    moves.Add(move);
 }

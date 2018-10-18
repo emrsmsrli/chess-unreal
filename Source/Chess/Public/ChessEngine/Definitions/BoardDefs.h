@@ -26,4 +26,50 @@ struct search_info
 
     int GAME_MODE;
     int POST_THINKING;
+
+
+    uint32 history[n_pieces][n_board_squares];
+    TMove killers[2][max_depth];
+
+    search_info();
+    void add_killer(uint32 ply, TMove& move);
 };
+
+FORCEINLINE search_info::search_info()
+{
+    starttime = 0;
+    stoptime = 0;
+    depth = 0;
+    timeset = 0;
+    movestogo = 0;
+
+    nodes = 0;
+
+    quit = 0;
+    stopped = 0;
+
+    fh = 0;
+    fhf = 0;
+    nullCut = 0;
+
+    GAME_MODE = 0;
+    POST_THINKING = 0;
+
+    for(auto& i : history) {
+        for(auto& j : i) {
+            j = 0;
+        }
+    }
+
+    for(auto& i : killers) {
+        for(auto& j : i) {
+            j = TMove::no_move;
+        }
+    }
+}
+
+FORCEINLINE void search_info::add_killer(const uint32 ply, TMove& move)
+{
+    killers[1][ply] = killers[0][ply];
+    killers[0][ply] = move;
+}

@@ -13,5 +13,5 @@ void TChessEngine::Initialize()
     ESquare::Initialize();
     TBitboard::Initialize();
     PosKey::Initialize();
-    init_mvv_lva();
+    TMoveGenerator::Initialize();
 }
