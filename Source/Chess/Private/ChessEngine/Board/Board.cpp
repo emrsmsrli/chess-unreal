@@ -17,68 +17,10 @@
 #define HASH_SIDE()         (pos_key_ ^= PosKey::GetSideKey())
 #define HASH_EN_P()         (pos_key_ ^= PosKey::GetPieceKey(EPieceType::empty, en_passant_sq_))
 
-#define INFINITE 30000
-#define MATE 29000
-
 constexpr auto start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 namespace
 {
-    const int32 PawnTable[64] = {
-        0, 0, 0, 0, 0, 0, 0, 0,
-        10, 10, 0, -10, -10, 0, 10, 10,
-        5, 0, 0, 5, 5, 0, 0, 5,
-        0, 0, 10, 20, 20, 10, 0, 0,
-        5, 5, 5, 10, 10, 5, 5, 5,
-        10, 10, 10, 20, 20, 10, 10, 10,
-        20, 20, 20, 30, 30, 20, 20, 20,
-        0, 0, 0, 0, 0, 0, 0, 0
-    };
-
-    const int32 KnightTable[64] = {
-        0, -10, 0, 0, 0, 0, -10, 0,
-        0, 0, 0, 5, 5, 0, 0, 0,
-        0, 0, 10, 10, 10, 10, 0, 0,
-        0, 0, 10, 20, 20, 10, 5, 0,
-        5, 10, 15, 20, 20, 15, 10, 5,
-        5, 10, 10, 20, 20, 10, 10, 5,
-        0, 0, 5, 10, 10, 5, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0
-    };
-
-    const int32 BishopTable[64] = {
-        0, 0, -10, 0, 0, -10, 0, 0,
-        0, 0, 0, 10, 10, 0, 0, 0,
-        0, 0, 10, 15, 15, 10, 0, 0,
-        0, 10, 15, 20, 20, 15, 10, 0,
-        0, 10, 15, 20, 20, 15, 10, 0,
-        0, 0, 10, 15, 15, 10, 0, 0,
-        0, 0, 0, 10, 10, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0
-    };
-
-    const int32 RookTable[64] = {
-        0, 0, 5, 10, 10, 5, 0, 0,
-        0, 0, 5, 10, 10, 5, 0, 0,
-        0, 0, 5, 10, 10, 5, 0, 0,
-        0, 0, 5, 10, 10, 5, 0, 0,
-        0, 0, 5, 10, 10, 5, 0, 0,
-        0, 0, 5, 10, 10, 5, 0, 0,
-        25, 25, 25, 25, 25, 25, 25, 25,
-        0, 0, 5, 10, 10, 5, 0, 0
-    };
-
-    const uint32 Mirror[64] = {
-        56, 57, 58, 59, 60, 61, 62, 63,
-        48, 49, 50, 51, 52, 53, 54, 55,
-        40, 41, 42, 43, 44, 45, 46, 47,
-        32, 33, 34, 35, 36, 37, 38, 39,
-        24, 25, 26, 27, 28, 29, 30, 31,
-        16, 17, 18, 19, 20, 21, 22, 23,
-        8, 9, 10, 11, 12, 13, 14, 15,
-        0, 1, 2, 3, 4, 5, 6, 7
-    };
-
     const uint32 castle_perm[120] = {
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
@@ -317,16 +259,6 @@ void TBoard::update_material()
     }
 }
 
-TArray<TMove> TBoard::generate_moves()
-{
-    return move_generator_.generate_moves();
-}
-
-TArray<TMove> TBoard::generate_moves(const uint32 sq)
-{
-    return move_generator_.generate_moves(sq);
-}
-
 bool TBoard::make_move(const TMove& m)
 {
     MAKE_SURE(is_valid());
@@ -504,19 +436,6 @@ void TBoard::take_move()
     MAKE_SURE(is_valid());
 }
 
-bool TBoard::move_exists(const TMove& m)
-{
-    const auto moves = generate_moves();
-    for(auto& move : moves) {
-        if(!make_move(move))
-            continue;
-        take_move();
-        if(move == m)
-            return true;
-    }
-    return false;
-}
-
 bool TBoard::is_attacked(const uint32 sq, const uint8 attacking_side) const
 {
     MAKE_SURE(Verification::IsSquareOnBoard(sq));
@@ -598,7 +517,7 @@ bool TBoard::is_valid()
 
     for(uint32 p = EPieceType::wp; p <= EPieceType::bk; ++p)
         for(auto sq : piece_locations_[p])
-            MAKE_SURE(b_[sq] == p);
+        MAKE_SURE(b_[sq] == p);
 
     for(uint32 sq64 = 0; sq64 < n_board_squares; sq64++) {
         const auto sq120 = ESquare::Sq120(sq64);
@@ -624,8 +543,8 @@ bool TBoard::is_valid()
 
     MAKE_SURE(pawns[ESide::white].Count() == piece_locations_[EPieceType::wp].Num());
     MAKE_SURE(pawns[ESide::black].Count() == piece_locations_[EPieceType::bp].Num());
-    MAKE_SURE(pawns[ESide::both].Count() == piece_locations_[EPieceType::wp].Num() 
-		+ piece_locations_[EPieceType::bp].Num());
+    MAKE_SURE(pawns[ESide::both].Count() == piece_locations_[EPieceType::wp].Num()
+        + piece_locations_[EPieceType::bp].Num());
 
     while(!pawns[ESide::white].IsEmpty()) {
         const auto sq64 = pawns[ESide::white].Pop();
@@ -681,196 +600,6 @@ FString TBoard::ToString() const
         str += "---";
     str += "\n    ";
     return str;
-}
-
-void TBoard::perft(const int32 depth, int64* leaf_nodes)
-{
-    MAKE_SURE(is_valid());
-
-    if(depth == 0) {
-        ++*leaf_nodes;
-        return;
-    }
-
-    auto moves = generate_moves();
-    for(auto i = 0; i < moves.Num(); i++) {
-        if(!make_move(moves[i]))
-            continue;
-
-        perft(depth - 1, leaf_nodes);
-        take_move();
-    }
-}
-
-FString TBoard::perf_test(const int32 depth)
-{
-    MAKE_SURE(is_valid());
-    int64 leaf_nodes = 0;
-    auto moves = generate_moves();
-    for(auto& m : moves) {
-        if(!make_move(m))
-            continue;
-        perft(depth - 1, &leaf_nodes);
-        take_move();
-    }
-    return FString::Printf(TEXT(" ;D%d %d"), depth, leaf_nodes);
-}
-
-int32 TBoard::evaluate()
-{
-    int32 score = material_score_[ESide::white] - material_score_[ESide::black];
-
-    /*~ white pawn ~*/
-    for(auto sq : piece_locations_[EPieceType::wp]) {
-        MAKE_SURE(Verification::IsSquareOnBoard(sq));
-        score += PawnTable[ESquare::Sq64(sq)];
-    }
-
-    /*~ black pawn ~*/
-    for(auto sq : piece_locations_[EPieceType::bp]) {
-        MAKE_SURE(Verification::IsSquareOnBoard(sq));
-        score -= PawnTable[Mirror[ESquare::Sq64(sq)]];
-    }
-
-    /*~ white knight ~*/
-    
-    for(auto sq : piece_locations_[EPieceType::wn]) {
-        MAKE_SURE(Verification::IsSquareOnBoard(sq));
-        score += KnightTable[ESquare::Sq64(sq)];
-    }
-
-    /*~ black knight ~*/
-    for(auto sq : piece_locations_[EPieceType::bn]) {
-        MAKE_SURE(Verification::IsSquareOnBoard(sq));
-        score -= KnightTable[Mirror[ESquare::Sq64(sq)]];
-    }
-
-    /*~ white bishop ~*/
-    for(auto sq : piece_locations_[EPieceType::wb]) {
-        MAKE_SURE(Verification::IsSquareOnBoard(sq));
-        score += BishopTable[ESquare::Sq64(sq)];
-    }
-
-    /*~ black bishop ~*/
-    for(auto sq : piece_locations_[EPieceType::bb]) {
-        MAKE_SURE(Verification::IsSquareOnBoard(sq));
-        score -= BishopTable[Mirror[ESquare::Sq64(sq)]];
-    }
-
-    /*~ white rook ~*/
-    for(auto sq : piece_locations_[EPieceType::wr]) {
-        MAKE_SURE(Verification::IsSquareOnBoard(sq));
-        score += RookTable[ESquare::Sq64(sq)];
-    }
-
-    /*~ black rook ~*/
-    for(auto sq : piece_locations_[EPieceType::br]) {
-        MAKE_SURE(Verification::IsSquareOnBoard(sq));
-        score -= RookTable[Mirror[ESquare::Sq64(sq)]];
-    }
-
-    return side_ == ESide::white ? score : -score;
-}
-
-void TBoard::search(search_info& info)
-{
-    pv_table_.empty();
-    ply_ = 0;
-
-    //~ iterative deepening
-    for(auto depth = 1; depth <= info.depth; ++depth) {
-        const auto best_score = alpha_beta(-INFINITE, INFINITE, depth, info, true);
-
-        // out of time check
-
-        const auto pvmoves = pv_table_.get_line(depth);
-        const auto best_move = pvmoves[0];
-
-        UE_LOG(LogTemp, Log, TEXT("depth %d, score %d, move: %s, nodes %ld"), depth,
-            best_score, *best_move.ToString(), info.nodes);
-
-        FString str = "pv";
-        for(auto& move : pvmoves) {
-            str += " " + move.ToString();
-        }
-
-        UE_LOG(LogTemp, Log, TEXT("%s"), *str);
-        UE_LOG(LogTemp, Log, TEXT("Ordering %.2f"), info.fh == 0 ? 0 : info.fhf / info.fh);
-    }
-}
-
-int32 TBoard::alpha_beta(int32 alpha, const int32 beta, const uint32 depth,
-                         search_info& info, const bool do_null)
-{
-    MAKE_SURE(is_valid());
-
-    info.nodes++;
-
-    if(depth == 0) {
-        return evaluate();
-    }
-
-    if(fifty_move_counter_ >= 100 || has_repetition())
-        return 0; // draw
-
-    if(ply_ > max_depth - 1)
-        return evaluate();
-
-    uint32 legal = 0;
-    const auto old_alpha = alpha;
-    auto moves = generate_moves();
-    auto best_move = TMove::no_move;
-
-    moves.Sort([](const TMove& lhs, const TMove& rhs) -> bool
-    {
-        return lhs.score() > rhs.score();
-    });
-
-    for(auto& move : moves) {// i = 0; i < moves.Num(); ++i) {
-        //auto move = moves[i];
-        if(!make_move(move))
-            continue;
-
-        legal++;
-        const auto score = -alpha_beta(-beta, -alpha, depth - 1, info, do_null);
-        take_move();
-
-        if(score > alpha) {
-            if(score >= beta) {
-                if(legal == 1)
-                    info.fhf++;
-                info.fh++;
-
-                if(!move.is_captured()) {
-                    info.add_killer(ply_, move);
-                }
-
-                return beta;
-            }
-            alpha = score;
-            best_move = move;
-
-            if(!move.is_captured()) {
-                info.history[b_[best_move.from()]][best_move.to()] += depth;
-			}
-        }
-    }
-
-    if(legal == 0) {
-        if(is_attacked(king_sq_[side_], side_ ^ 1))
-            return -MATE + ply_; // mate
-        return 0; // stalemate and draw
-    }
-
-    if(alpha != old_alpha)
-        pv_table_.add_move(best_move, pos_key_);
-
-    return alpha;
-}
-
-int32 TBoard::quiescence(int32 alpha, int32 beta, search_info& info)
-{
-    return 0;
 }
 
 bool TBoard::has_repetition()

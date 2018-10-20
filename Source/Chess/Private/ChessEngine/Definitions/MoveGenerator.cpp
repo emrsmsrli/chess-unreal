@@ -27,7 +27,7 @@ TMoveGenerator::TMoveGenerator(TBoard* ref)
     ref_ = ref;
 }
 
-TArray<TMove> TMoveGenerator::generate_moves()
+TArray<TMove> TMoveGenerator::generate_moves() const
 {
     MAKE_SURE(ref_->is_valid());
 
@@ -43,7 +43,7 @@ TArray<TMove> TMoveGenerator::generate_moves()
     return moves;
 }
 
-TArray<TMove> TMoveGenerator::generate_moves(const uint32 sq)
+TArray<TMove> TMoveGenerator::generate_moves(const uint32 sq) const
 {
     const auto piece = ref_->b_[sq];
     const auto piece_info = pieces[piece];
@@ -62,7 +62,21 @@ TArray<TMove> TMoveGenerator::generate_moves(const uint32 sq)
     return moves;
 }
 
-void TMoveGenerator::generate_pawn_moves(const uint32 sq, TArray<TMove>& moves)
+bool TMoveGenerator::does_move_exist(const TMove& m) const
+{
+    // todo try optimising with generate_moves(m.from());
+    const auto moves = generate_moves();
+    for(auto& move : moves) {
+        if(!ref_->make_move(move))
+            continue;
+        ref_->take_move();
+        if(move == m)
+            return true;
+    }
+    return false;
+}
+
+void TMoveGenerator::generate_pawn_moves(const uint32 sq, TArray<TMove>& moves) const
 {
     MAKE_SURE(Verification::IsSquareOnBoard(sq));
 
@@ -89,7 +103,7 @@ void TMoveGenerator::generate_pawn_moves(const uint32 sq, TArray<TMove>& moves)
     }
 }
 
-void TMoveGenerator::generate_sliding_moves(const uint32 sq, TArray<TMove>& moves)
+void TMoveGenerator::generate_sliding_moves(const uint32 sq, TArray<TMove>& moves) const
 {
     const auto piece = ref_->b_[sq];
     const auto other_side = ref_->side_ ^ 1;
@@ -109,7 +123,7 @@ void TMoveGenerator::generate_sliding_moves(const uint32 sq, TArray<TMove>& move
     }
 }
 
-void TMoveGenerator::generate_non_sliding_moves(const uint32 sq, TArray<TMove>& moves)
+void TMoveGenerator::generate_non_sliding_moves(const uint32 sq, TArray<TMove>& moves) const
 {
     const auto piece = ref_->b_[sq];
     const auto other_side = ref_->side_ ^ 1;
@@ -128,7 +142,7 @@ void TMoveGenerator::generate_non_sliding_moves(const uint32 sq, TArray<TMove>& 
     }
 }
 
-void TMoveGenerator::generate_castling_moves(TArray<TMove>& moves)
+void TMoveGenerator::generate_castling_moves(TArray<TMove>& moves) const
 {
     if(ref_->side_ == ESide::white) {
         if(ref_->cast_perm_ & ECastlingPermission::c_wk) {
@@ -174,26 +188,35 @@ void TMoveGenerator::generate_castling_moves(TArray<TMove>& moves)
     }
 }
 
-void TMoveGenerator::add_quiet_move(TMove move, TArray<TMove>& moves)
+void TMoveGenerator::add_quiet_move(TMove move, TArray<TMove>& moves) const
 {
-    // todo
-    // if(search_killers_[0][ply_] == move) {
-    //    move.set_score(900000);
-    // } else if(search_killers_[1][ply_] == move) {
-    //    move.set_score(800000);
-    // } else {
-    //    move.set_score(search_history_[b_[move.from()]][move.to()]);
-    // }
+    if(ref_->is_multiplayer_) {
+        if(ref_->evaluator_.search_info_->killers[0][ref_->ply_] == move) {
+           move.set_score(900000);
+        } else if(ref_->evaluator_.search_info_->killers[1][ref_->ply_] == move) {
+           move.set_score(800000);
+        } else {
+           move.set_score(ref_->evaluator_.search_info_->history[ref_->b_[move.from()]][move.to()]);
+        }
+    }
     moves.Add(move);
 }
 
-void TMoveGenerator::add_capture_move(TMove move, TArray<TMove>& moves)
+void TMoveGenerator::add_capture_move(TMove move, TArray<TMove>& moves) const
 {
-    move.set_score(mvv_lva_scores[move.captured_piece()][ref_->b_[move.from()]] + 1000000);
+    if(ref_->is_multiplayer_)
+        move.set_score(mvv_lva_scores[move.captured_piece()][ref_->b_[move.from()]] + 1000000);
     moves.Add(move);
 }
 
-void TMoveGenerator::add_pawn_regular_move(const uint32 from, const uint32 to, TArray<TMove>& moves)
+void TMoveGenerator::add_en_passant_move(TMove move, TArray<TMove>& moves) const
+{
+    if(ref_->is_multiplayer_)
+        move.set_score(105 + 1000000);
+    moves.Add(move);
+}
+
+void TMoveGenerator::add_pawn_regular_move(const uint32 from, const uint32 to, TArray<TMove>& moves) const
 {
     MAKE_SURE(Verification::IsSquareOnBoard(from));
     MAKE_SURE(Verification::IsSquareOnBoard(to));
@@ -210,7 +233,7 @@ void TMoveGenerator::add_pawn_regular_move(const uint32 from, const uint32 to, T
 }
 
 void TMoveGenerator::add_pawn_capture_move(const uint32 from, const uint32 to,
-                                           const uint32 captured, TArray<TMove>& moves)
+                                           const uint32 captured, TArray<TMove>& moves) const
 {
     MAKE_SURE(Verification::IsPieceValidOrEmpty(captured));
     MAKE_SURE(Verification::IsSquareOnBoard(from));
@@ -225,10 +248,4 @@ void TMoveGenerator::add_pawn_capture_move(const uint32 from, const uint32 to,
     } else {
         add_capture_move(TMove::create(from, to, captured, empty, 0), moves);
     }
-}
-
-void TMoveGenerator::add_en_passant_move(TMove move, TArray<TMove>& moves)
-{
-    move.set_score(105 + 1000000);
-    moves.Add(move);
 }

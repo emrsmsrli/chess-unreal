@@ -8,11 +8,13 @@
 #include "Undo.h"
 #include "PrincipleVariation.h"
 #include "MoveGenerator.h"
+#include "Evaluator.h"
 
 class TBoard
 {
     friend class TMoveGenerator;
     friend class TPrincipleVariationTable;
+    friend class TEvaluator;
 
     uint32 b_[n_board_squares_x];
     TBitboard pawns_[3];
@@ -35,26 +37,17 @@ class TBoard
     uint32 ply_;
     TArray<FUndo> history_;
 
-    TPrincipleVariationTable pv_table_ = TPrincipleVariationTable(this);
-    TMoveGenerator move_generator_ = TMoveGenerator(this);
+    bool is_multiplayer_;
 
 public:
     TBoard();
-    bool set(const FString& fen);
 
-    TArray<TMove> generate_moves();
-    TArray<TMove> generate_moves(uint32 sq);
+    bool set(const FString& fen);
 
     bool make_move(const TMove& m);
     void take_move();
 
     FString ToString() const;
-    FString perf_test(int32 depth);
-
-    int32 evaluate();
-    void search(struct search_info& info);
-    int32 alpha_beta(int32 alpha, int32 beta, uint32 depth, struct search_info& info, bool do_null);
-    int32 quiescence(int32 alpha, int32 beta, struct search_info& info);
 
 private:
     void reset();
@@ -63,12 +56,9 @@ private:
 
     bool is_valid();
     bool has_repetition();
-    bool move_exists(const TMove& m);
     bool is_attacked(uint32 sq, uint8 attacking_side) const;
 
     void add_piece(uint32 sq, uint32 piece);
     void move_piece(uint32 from, uint32 to);
     void clear_piece(uint32 sq);
-
-    void perft(int32 depth, int64* leaf_nodes);
 };
