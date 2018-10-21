@@ -13,16 +13,18 @@
 #include "Evaluator.h"
 #include "Board.generated.h"
 
-// todo change all classes to be prefixed by U not T
+class UMoveGenerator;
+class UPrincipleVariationTable;
+class UEvaluator;
 
 UCLASS()
-class UBoard : public UObject
+class CHESS_API UBoard : public UObject
 {
     GENERATED_BODY()
 
-    friend class UMoveGenerator;
-    friend class UPrincipleVariationTable;
-    friend class UEvaluator;
+    friend UMoveGenerator;
+    friend UPrincipleVariationTable;
+    friend UEvaluator;
 
     uint32 b_[n_board_squares_x];
     FBitboard pawns_[3];
@@ -53,8 +55,6 @@ public:
     bool MakeMove(const FMove& m);
     void TakeMove();
 
-    FString ToString() const;
-
 private:
     void Reset();
     void UpdateMaterial();
@@ -68,6 +68,9 @@ private:
     void ClearPiece(uint32 sq);
 
 #ifdef DEBUG
+public:
+    FString ToString() const;
+private:
     bool IsOk() const;
 #endif
 };

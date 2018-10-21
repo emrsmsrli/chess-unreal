@@ -2,17 +2,12 @@
 
 #pragma once
 
-#include "Debug.h"
 #include "Object.h"
-#include "Platform.h"
+#include "Debug.h"
 #include "ChessEngine.generated.h"
 
-#ifdef DEBUG
-#include "CString.h"
-#endif
-
 UCLASS()
-class UChessEngine : public UObject
+class CHESS_API UChessEngine : public UObject
 {
     GENERATED_BODY()
 

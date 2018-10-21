@@ -6,7 +6,7 @@
 #include "Piece.h"
 #include "Square.h"
 
-class Verification
+class CHESS_API Verification
 {
 public:
     FORCEINLINE static bool IsSquareOnBoard(const uint32 sq)

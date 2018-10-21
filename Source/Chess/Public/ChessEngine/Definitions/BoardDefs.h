@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Platform.h"
+#include "CoreTypes.h"
 #include "Consts.h"
 #include "Move.h"
 
@@ -12,7 +12,7 @@ enum ECastlingPermission
     c_wk = 1, c_wq = 2, c_bk = 4, c_bq = 8
 };
 
-struct FSearchInfo
+struct CHESS_API FSearchInfo
 {
     int32 starttime;
     int32 stoptime;

@@ -4,7 +4,7 @@
 
 #include "Move.h"
 
-struct FUndo
+struct CHESS_API FUndo
 {
     FMove move;
     uint32 cast_perm;

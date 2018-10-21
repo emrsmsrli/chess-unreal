@@ -4,6 +4,10 @@
 #include "Consts.h"
 #include "Square.h"
 
+#ifdef DEBUG
+#include "CString.h"
+#endif
+
 uint64 set_mask[n_board_squares];
 uint64 clr_mask[n_board_squares];
 uint32 btable[n_board_squares] = {
@@ -58,6 +62,7 @@ bool FBitboard::IsEmpty() const
     return board_ == 0;
 }
 
+#ifdef DEBUG
 FString FBitboard::ToString() const
 {
     FString str;
@@ -77,6 +82,7 @@ FString FBitboard::ToString() const
 
     return str;
 }
+#endif
 
 void FBitboard::Initialize()
 {

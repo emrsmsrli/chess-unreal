@@ -2,14 +2,15 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "CoreTypes.h"
+#include "Containers/Array.h"
 
 enum EPieceType
 {
     empty, wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk
 };
 
-struct TPieceInfo
+struct CHESS_API TPieceInfo
 {
     bool is_big;
     bool is_major;

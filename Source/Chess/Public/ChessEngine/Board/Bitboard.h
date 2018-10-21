@@ -2,7 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "CoreTypes.h"
+#include "Debug.h"
+
+class FString;
 
 class CHESS_API FBitboard
 {
@@ -15,7 +18,10 @@ public:
     int32 Count() const;
     void Empty();
     bool IsEmpty() const;
+
+#ifdef DEBUG
     FString ToString() const;
+#endif
 
     static void Initialize();
 };

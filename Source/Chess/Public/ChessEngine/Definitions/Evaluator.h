@@ -3,15 +3,16 @@
 #pragma once
 
 #include "Object.h"
-#include "Platform.h"
 #include "Evaluator.generated.h"
 
+class UMoveGenerator;
+
 UCLASS()
-class UEvaluator : public UObject
+class CHESS_API UEvaluator : public UObject
 {
     GENERATED_BODY()
 
-    friend class UMoveGenerator;
+    friend UMoveGenerator;
     
 public:
     void Search() const;

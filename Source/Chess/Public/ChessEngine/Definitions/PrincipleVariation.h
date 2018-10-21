@@ -9,7 +9,7 @@
 #include "PrincipleVariation.generated.h"
 
 UCLASS()
-class UPrincipleVariationTable : public UObject
+class CHESS_API UPrincipleVariationTable : public UObject
 {
     GENERATED_BODY()
 

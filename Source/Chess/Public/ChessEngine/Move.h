@@ -4,7 +4,7 @@
 
 #include "UnrealString.h"
 
-class FMove
+class CHESS_API FMove
 {
 public:
     static const uint32 flag_en_passant = 0x40000;

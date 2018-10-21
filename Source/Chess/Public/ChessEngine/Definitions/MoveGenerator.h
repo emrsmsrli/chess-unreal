@@ -8,7 +8,7 @@
 #include "MoveGenerator.generated.h"
 
 UCLASS()
-class UMoveGenerator : public UObject
+class CHESS_API UMoveGenerator : public UObject
 {
     GENERATED_BODY()
 
