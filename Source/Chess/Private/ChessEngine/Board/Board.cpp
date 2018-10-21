@@ -141,9 +141,8 @@ bool UBoard::Set(const FString& fen)
             const auto sq120 = ESquare::Sq120(file, rank);
             if(piece != EPieceType::empty)
                 b_[sq120] = piece;
+            file++;
         }
-
-        file += count;
     }
 
     MAKE_SURE(*f == 'w' || *f == 'b');
