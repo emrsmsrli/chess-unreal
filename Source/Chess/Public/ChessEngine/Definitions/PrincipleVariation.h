@@ -2,22 +2,24 @@
 
 #pragma once
 
+#include "Object.h"
 #include "Containers/Map.h"
 #include "Containers/Array.h"
 #include "Move.h"
+#include "PrincipleVariation.generated.h"
 
-class TPrincipleVariationTable
+UCLASS()
+class UPrincipleVariationTable : public UObject
 {
-    class TBoard* b_;
-    TMap<uint64, TMove> table_; // pos_key, move
+    GENERATED_BODY()
+
+    TMap<uint64, FMove> table_; // pos_key, move
 
 public:
-    explicit TPrincipleVariationTable(class TBoard* b_ref);
-
-    void add_move(TMove& move, uint64 pos_key);
-    TArray<TMove> get_line(uint32 depth);
-    void empty();
+    void AddMove(FMove& move, uint64 pos_key);
+    TArray<FMove> GetLine(uint32 depth);
+    void Clear();
 
 private:
-    TMove probe();
+    FMove probe();
 };

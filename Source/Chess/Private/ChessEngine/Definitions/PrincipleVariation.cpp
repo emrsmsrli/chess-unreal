@@ -3,45 +3,41 @@
 #include "PrincipleVariation.h"
 #include "Board.h"
 #include "Debug.h"
+#include "ChessEngine.h"
 
-TPrincipleVariationTable::TPrincipleVariationTable(TBoard* b_ref)
-{
-    b_ = b_ref;
-}
-
-void TPrincipleVariationTable::add_move(TMove& move, const uint64 pos_key)
+void UPrincipleVariationTable::AddMove(FMove& move, const uint64 pos_key)
 {
     table_.Add(pos_key, move);
 }
 
-TArray<TMove> TPrincipleVariationTable::get_line(const uint32 depth)
+TArray<FMove> UPrincipleVariationTable::GetLine(const uint32 depth)
 {
-    TArray<TMove> arr;
+    TArray<FMove> arr;
     MAKE_SURE(depth < max_depth);
 
     auto m = probe();
-    while(m != TMove::no_move && arr.Num() < static_cast<int32>(depth)) {
-        if(b_->move_exists(m)) {
-            b_->make_move(m);
+    while(m != FMove::no_move && arr.Num() < static_cast<int32>(depth)) {
+        if(CEngine->move_generator_->DoesMoveExist(m)) {
+            CEngine->board_->MakeMove(m);
             arr.Add(m);
         } else break;
         m = probe();
     }
 
-    while(b_->ply_ > 0)
-        b_->take_move();
+    while(CEngine->board_->ply_ > 0)
+        CEngine->board_->TakeMove();
     return arr;
 }
 
-void TPrincipleVariationTable::empty()
+void UPrincipleVariationTable::Clear()
 {
     table_.Empty();
 }
 
-TMove TPrincipleVariationTable::probe()
+FMove UPrincipleVariationTable::probe()
 {
-    const auto search = table_.Find(b_->pos_key_);
+    const auto search = table_.Find(CEngine->board_->pos_key_);
     if(!search)
-        return TMove::no_move;
+        return FMove::no_move;
     return *search;
 }

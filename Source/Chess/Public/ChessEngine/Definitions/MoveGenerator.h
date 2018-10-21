@@ -2,33 +2,34 @@
 
 #pragma once
 
+#include "Object.h"
 #include "Containers/Array.h"
 #include "Move.h"
+#include "MoveGenerator.generated.h"
 
-class TMoveGenerator
+UCLASS()
+class UMoveGenerator : public UObject
 {
-    class TBoard* ref_;
+    GENERATED_BODY()
 
 public:
-    explicit TMoveGenerator(class TBoard* ref);
-
-    TArray<TMove> generate_moves() const;
-    TArray<TMove> generate_moves(uint32 sq) const;
-    bool does_move_exist(const TMove& m) const;
+    TArray<FMove> GenerateMoves() const;
+    TArray<FMove> GenerateMoves(uint32 sq) const;
+    bool DoesMoveExist(const FMove& m) const;
 
     static void Initialize();
 
 private:
-    void generate_pawn_moves(uint32 sq, TArray<TMove>& moves) const;
-    void generate_sliding_moves(uint32 sq, TArray<TMove>& moves) const;
-    void generate_non_sliding_moves(uint32 sq, TArray<TMove>& moves) const;
-    void generate_castling_moves(TArray<TMove>& moves) const;
+    void GeneratePawnMoves(uint32 sq, TArray<FMove>& moves) const;
+    void GenerateSlidingMoves(uint32 sq, TArray<FMove>& moves) const;
+    void GenerateNonSlidingMoves(uint32 sq, TArray<FMove>& moves) const;
+    void GenerateCastlingMoves(TArray<FMove>& moves) const;
 
-    void add_quiet_move(TMove move, TArray<TMove>& moves) const;
-    void add_capture_move(TMove move, TArray<TMove>& moves) const;
-    void add_en_passant_move(TMove move, TArray<TMove>& moves) const;
+    void AddQuietMove(FMove move, TArray<FMove>& moves) const;
+    void AddCaptureMove(FMove move, TArray<FMove>& moves) const;
+    void AddEnPassantMove(FMove move, TArray<FMove>& moves) const;
 
-    void add_pawn_regular_move(uint32 from, uint32 to, TArray<TMove>& moves) const;
-    void add_pawn_capture_move(uint32 from, uint32 to,
-                               uint32 captured, TArray<TMove>& moves) const;
+    void AddPawnRegularMove(uint32 from, uint32 to, TArray<FMove>& moves) const;
+    void AddPawnCaptureMove(uint32 from, uint32 to,
+                               uint32 captured, TArray<FMove>& moves) const;
 };

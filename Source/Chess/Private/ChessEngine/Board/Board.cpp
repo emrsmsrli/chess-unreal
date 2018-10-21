@@ -8,7 +8,6 @@
 #include "Undo.h"
 #include "Verify.h"
 #include "Side.h"
-#include "Debug.h"
 
 #define MAX_POSITION_MOVES 256
 
@@ -37,12 +36,12 @@ namespace
     };
 }
 
-TBoard::TBoard()
+UBoard::UBoard()
 {
-    set(start_fen);
+    Set(start_fen);
 }
 
-void TBoard::reset()
+void UBoard::Reset()
 {
     for(auto& sq : b_)
         sq = ESquare::offboard;
@@ -75,9 +74,9 @@ void TBoard::reset()
     pos_key_ = 0;
 }
 
-bool TBoard::set(const FString& fen)
+bool UBoard::Set(const FString& fen)
 {
-    reset();
+    Reset();
 
     auto f = *fen;
     for(int32 rank = ERank::rank_8, file = EFile::file_a; rank >= ERank::rank_1 && *f; f++) {
@@ -189,12 +188,12 @@ bool TBoard::set(const FString& fen)
         en_passant_sq_ = ESquare::Sq120(file, rank);
     }
 
-    pos_key_ = generate_pos_key();
-    update_material();
+    pos_key_ = GeneratePositionKey();
+    UpdateMaterial();
     return true;
 }
 
-uint64 TBoard::generate_pos_key()
+uint64 UBoard::GeneratePositionKey() const
 {
     uint64 key = 0;
     for(uint32 sq = 0; sq < n_board_squares_x; ++sq) {
@@ -219,23 +218,23 @@ uint64 TBoard::generate_pos_key()
     return key;
 }
 
-void TBoard::update_material()
+void UBoard::UpdateMaterial()
 {
     for(uint32 sq = 0; sq < n_board_squares_x; ++sq) {
         const auto piece = b_[sq];
         if(piece != ESquare::offboard && piece != EPieceType::empty) {
-            const auto p = pieces[piece];
-            const auto side = p.side;
+            const auto piece_info = piece_infos[piece];
+            const auto side = piece_info.side;
 
-            if(p.is_big) {
+            if(piece_info.is_big) {
                 n_big_pieces_[side]++;
-                if(p.is_major)
+                if(piece_info.is_major)
                     n_major_pieces_[side]++;
-                else if(p.is_minor)
+                else if(piece_info.is_minor)
                     n_minor_pieces_[side]++;
             }
 
-            material_score_[side] += p.value;
+            material_score_[side] += piece_info.value;
             piece_locations_[piece].Add(sq);
 
             switch(piece) {
@@ -259,9 +258,9 @@ void TBoard::update_material()
     }
 }
 
-bool TBoard::make_move(const TMove& m)
+bool UBoard::MakeMove(const FMove& m)
 {
-    MAKE_SURE(is_valid());
+    MAKE_SURE(IsOk());
 
     const auto from = m.from();
     const auto to = m.to();
@@ -277,23 +276,23 @@ bool TBoard::make_move(const TMove& m)
 
     if(m.is_enpassant()) {
         if(side == ESide::white) {
-            clear_piece(to - 10);
+            ClearPiece(to - 10);
         } else {
-            clear_piece(to + 10);
+            ClearPiece(to + 10);
         }
     } else if(m.is_castling()) {
         switch(to) {
             case ESquare::c1:
-                move_piece(ESquare::a1, ESquare::d1);
+                MovePiece(ESquare::a1, ESquare::d1);
                 break;
             case ESquare::c8:
-                move_piece(ESquare::a8, ESquare::d8);
+                MovePiece(ESquare::a8, ESquare::d8);
                 break;
             case ESquare::g1:
-                move_piece(ESquare::h1, ESquare::f1);
+                MovePiece(ESquare::h1, ESquare::f1);
                 break;
             case ESquare::g8:
-                move_piece(ESquare::h8, ESquare::f8);
+                MovePiece(ESquare::h8, ESquare::f8);
                 break;
             default:
             verify(false);
@@ -319,14 +318,14 @@ bool TBoard::make_move(const TMove& m)
     const auto captured = m.captured_piece();
     if(captured != EPieceType::empty) {
         MAKE_SURE(Verification::IsPieceValid(captured));
-        clear_piece(to);
+        ClearPiece(to);
         fifty_move_counter_ = 0;
     }
 
     ply_++;
     history_.Add(u);
 
-    if(pieces[b_[from]].is_pawn) {
+    if(piece_infos[b_[from]].is_pawn) {
         fifty_move_counter_ = 0;
         if(m.is_pawnstart()) {
             if(side == ESide::white) {
@@ -340,35 +339,35 @@ bool TBoard::make_move(const TMove& m)
         }
     }
 
-    move_piece(from, to);
+    MovePiece(from, to);
 
     const auto promoted = m.promoted_piece();
     if(promoted != EPieceType::empty) {
-        MAKE_SURE(Verification::IsPieceValid(promoted) && !pieces[promoted].is_pawn);
-        clear_piece(to);
-        add_piece(to, promoted);
+        MAKE_SURE(Verification::IsPieceValid(promoted) && !piece_infos[promoted].is_pawn);
+        ClearPiece(to);
+        AddPiece(to, promoted);
     }
 
-    if(pieces[b_[to]].is_king) {
+    if(piece_infos[b_[to]].is_king) {
         king_sq_[side] = to;
     }
 
     side_ ^= 1;
     HASH_SIDE();
 
-    MAKE_SURE(is_valid());
+    MAKE_SURE(IsOk());
 
-    if(is_attacked(king_sq_[side], side_)) {
-        take_move();
+    if(IsAttacked(king_sq_[side], side_)) {
+        TakeMove();
         return false;
     }
 
     return true;
 }
 
-void TBoard::take_move()
+void UBoard::TakeMove()
 {
-    MAKE_SURE(is_valid());
+    MAKE_SURE(IsOk());
 
     auto h = history_.Pop();
     ply_--;
@@ -395,52 +394,52 @@ void TBoard::take_move()
 
     if(h.move.is_enpassant()) {
         if(side_ == ESide::white) {
-            add_piece(to - 10, EPieceType::bp);
+            AddPiece(to - 10, EPieceType::bp);
         } else {
-            add_piece(to + 10, EPieceType::wp);
+            AddPiece(to + 10, EPieceType::wp);
         }
     } else if(h.move.is_castling()) {
         switch(to) {
-            case ESquare::c1: move_piece(ESquare::d1, ESquare::a1);
+            case ESquare::c1: MovePiece(ESquare::d1, ESquare::a1);
                 break;
-            case ESquare::c8: move_piece(ESquare::d8, ESquare::a8);
+            case ESquare::c8: MovePiece(ESquare::d8, ESquare::a8);
                 break;
-            case ESquare::g1: move_piece(ESquare::f1, ESquare::h1);
+            case ESquare::g1: MovePiece(ESquare::f1, ESquare::h1);
                 break;
-            case ESquare::g8: move_piece(ESquare::f8, ESquare::h8);
+            case ESquare::g8: MovePiece(ESquare::f8, ESquare::h8);
                 break;
             default:
             verify(false);
         }
     }
 
-    move_piece(to, from);
+    MovePiece(to, from);
 
-    if(pieces[b_[from]].is_king) {
+    if(piece_infos[b_[from]].is_king) {
         king_sq_[side_] = from;
     }
 
     const auto captured = h.move.captured_piece();
     if(captured != EPieceType::empty) {
         MAKE_SURE(Verification::IsPieceValid(captured));
-        add_piece(to, captured);
+        AddPiece(to, captured);
     }
 
     const auto promoted = h.move.promoted_piece();
     if(h.move.is_promoted()) {
-        MAKE_SURE(Verification::IsPieceValid(promoted) && !pieces[promoted].is_pawn);
-        clear_piece(from);
-        add_piece(from, pieces[promoted].side == ESide::white ? EPieceType::wp : EPieceType::bp);
+        MAKE_SURE(Verification::IsPieceValid(promoted) && !piece_infos[promoted].is_pawn);
+        ClearPiece(from);
+        AddPiece(from, piece_infos[promoted].side == ESide::white ? EPieceType::wp : EPieceType::bp);
     }
 
-    MAKE_SURE(is_valid());
+    MAKE_SURE(IsOk());
 }
 
-bool TBoard::is_attacked(const uint32 sq, const uint8 attacking_side) const
+bool UBoard::IsAttacked(const uint32 sq, const uint8 attacking_side) const
 {
     MAKE_SURE(Verification::IsSquareOnBoard(sq));
     MAKE_SURE(Verification::IsSideValid(attacking_side));
-    MAKE_SURE(is_valid());
+    MAKE_SURE(IsOk());
 
     // pawns
     if(attacking_side == ESide::white) {
@@ -452,20 +451,20 @@ bool TBoard::is_attacked(const uint32 sq, const uint8 attacking_side) const
     }
 
     // knights
-    for(auto dir : pieces[wn].move_directions) {
+    for(auto dir : piece_infos[wn].move_directions) {
         const auto p = b_[sq + dir];
-        const auto piece = pieces[p];
+        const auto piece = piece_infos[p];
         if(p != ESquare::offboard && piece.is_knight && piece.side == attacking_side)
             return true;
     }
 
     // rooks & queens
-    for(auto dir : pieces[wr].move_directions) {
+    for(auto dir : piece_infos[wr].move_directions) {
         auto sqq = sq + dir;
         auto piece = b_[sqq];
         while(piece != ESquare::offboard) {
             if(piece != empty) {
-                if(pieces[piece].is_rook_queen && pieces[piece].side == attacking_side)
+                if(piece_infos[piece].is_rook_queen && piece_infos[piece].side == attacking_side)
                     return true;
                 break;
             }
@@ -475,12 +474,12 @@ bool TBoard::is_attacked(const uint32 sq, const uint8 attacking_side) const
     }
 
     // bishops & queens
-    for(auto dir : pieces[wb].move_directions) {
+    for(auto dir : piece_infos[wb].move_directions) {
         auto sqq = sq + dir;
         auto piece = b_[sqq];
         while(piece != ESquare::offboard) {
             if(piece != empty) {
-                if(pieces[piece].is_bishop_queen && pieces[piece].side == attacking_side)
+                if(piece_infos[piece].is_bishop_queen && piece_infos[piece].side == attacking_side)
                     return true;
                 break;
             }
@@ -490,16 +489,122 @@ bool TBoard::is_attacked(const uint32 sq, const uint8 attacking_side) const
     }
 
     // kings
-    for(auto dir : pieces[wk].move_directions) {
+    for(auto dir : piece_infos[wk].move_directions) {
         const auto piece = b_[sq + dir];
-        if(piece != ESquare::offboard && pieces[piece].is_king && pieces[piece].side == attacking_side)
+        if(piece != ESquare::offboard && piece_infos[piece].is_king && piece_infos[piece].side == attacking_side)
             return true;
     }
 
     return false;
 }
 
-bool TBoard::is_valid()
+bool UBoard::HasRepetition()
+{
+    for(auto i = history_.Num() - fifty_move_counter_; i < history_.Num() - 1; ++i) {
+        if(history_[i].pos_key == pos_key_)
+            return true;
+    }
+    return false;
+}
+
+void UBoard::AddPiece(const uint32 sq, const uint32 piece)
+{
+    MAKE_SURE(Verification::IsSquareOnBoard(sq));
+    MAKE_SURE(Verification::IsPieceValid(piece));
+
+    const auto piece_info = piece_infos[piece];
+    HASH_PIECE(piece, sq);
+    b_[sq] = piece;
+
+    if(piece_info.is_big) {
+        n_big_pieces_[piece_info.side]++;
+        if(piece_info.is_major)
+            n_major_pieces_[piece_info.side]++;
+        else
+            n_minor_pieces_[piece_info.side]++;
+    } else {
+        pawns_[piece_info.side].SetSquare(ESquare::Sq64(sq));
+        pawns_[ESide::both].SetSquare(ESquare::Sq64(sq));
+    }
+    material_score_[piece_info.side] += piece_info.value;
+    piece_locations_[piece].Add(sq);
+}
+
+void UBoard::MovePiece(const uint32 from, const uint32 to)
+{
+    MAKE_SURE(Verification::IsSquareOnBoard(from));
+    MAKE_SURE(Verification::IsSquareOnBoard(to));
+
+    const auto piece = b_[from];
+    const auto piece_info = piece_infos[piece];
+
+    HASH_PIECE(piece, from);
+    b_[from] = EPieceType::empty;
+    HASH_PIECE(piece, to);
+    b_[to] = piece;
+
+    if(piece_info.is_pawn) {
+        pawns_[piece_info.side].ClearSquare(ESquare::Sq64(from));
+        pawns_[ESide::both].ClearSquare(ESquare::Sq64(from));
+        pawns_[piece_info.side].SetSquare(ESquare::Sq64(to));
+        pawns_[ESide::both].SetSquare(ESquare::Sq64(to));
+    }
+
+    for(auto& sq : piece_locations_[piece]) {
+        if(sq == from) {
+            sq = to;
+            break;
+        }
+    }
+}
+
+void UBoard::ClearPiece(const uint32 sq)
+{
+    MAKE_SURE(Verification::IsSquareOnBoard(sq));
+    MAKE_SURE(IsOk());
+    const auto piece = b_[sq];
+    const auto piece_info = piece_infos[piece];
+    MAKE_SURE(Verification::IsPieceValid(piece));
+
+    HASH_PIECE(piece, sq);
+    b_[sq] = EPieceType::empty;
+    material_score_[piece_info.side] -= piece_info.value;
+
+    if(piece_info.is_big) {
+        n_big_pieces_[piece_info.side]--;
+        if(piece_info.is_major)
+            n_major_pieces_[piece_info.side]--;
+        else
+            n_minor_pieces_[piece_info.side]--;
+    } else {
+        pawns_[piece_info.side].ClearSquare(ESquare::Sq64(sq));
+        pawns_[ESide::both].ClearSquare(ESquare::Sq64(sq));
+    }
+
+    piece_locations_[piece].RemoveSingleSwap(sq);
+}
+
+#ifdef DEBUG
+FString UBoard::ToString() const
+{
+    char r[] = ".PNBRQKpnbrqk";
+    FString str;
+    for(auto rank : ERank::AllReversed) {
+        for(auto file : EFile::All) {
+            const auto piece = b_[ESquare::Sq120(file, rank)];
+            str += FString::Printf(TEXT("%3c"), r[piece]);
+        }
+        str += '\n';
+    }
+
+    str += "  ";
+    for(int32 file = EFile::file_a; file <= EFile::file_h; file++)
+        str += "---";
+    str += "\n    ";
+    return str;
+}
+
+bool UBoard::IsOk() const
 {
     int32 piece_count[n_pieces];
     uint32 n_big_pieces[2] = {0, 0};
@@ -507,7 +612,7 @@ bool TBoard::is_valid()
     uint32 n_minor_pieces[2] = {0, 0};
     uint32 material_score[2] = {0, 0};
 
-    TBitboard pawns[3];
+    FBitboard pawns[3];
     pawns[0] = pawns_[0];
     pawns[1] = pawns_[1];
     pawns[2] = pawns_[2];
@@ -521,20 +626,20 @@ bool TBoard::is_valid()
 
     for(uint32 sq64 = 0; sq64 < n_board_squares; sq64++) {
         const auto sq120 = ESquare::Sq120(sq64);
-        const auto p = b_[sq120];
-        const auto piece = pieces[p];
-        piece_count[p]++;
+        const auto piece = b_[sq120];
+        const auto piece_info = piece_infos[piece];
+        piece_count[piece]++;
 
-        const auto side = piece.side;
-        if(piece.is_big) {
+        const auto side = piece_info.side;
+        if(piece_info.is_big) {
             n_big_pieces[side]++;
-            if(piece.is_major)
+            if(piece_info.is_major)
                 n_major_pieces[side]++;
-            else if(piece.is_minor)
+            else if(piece_info.is_minor)
                 n_minor_pieces[side]++;
         }
 
-        material_score[side] += piece.value;
+        material_score[side] += piece_info.value;
     }
 
     for(uint32 p = EPieceType::wp; p <= EPieceType::bk; ++p) {
@@ -571,7 +676,7 @@ bool TBoard::is_valid()
     MAKE_SURE(n_big_pieces[ESide::white] == n_big_pieces_[ESide::white]
         && n_big_pieces[ESide::black] == n_big_pieces_[ESide::black]);
     MAKE_SURE(side_ == ESide::white || side_ == ESide::black);
-    MAKE_SURE(generate_pos_key() == pos_key_);
+    MAKE_SURE(GeneratePositionKey() == pos_key_);
 
     MAKE_SURE(en_passant_sq_ == ESquare::no_sq ||
         ESquare::Rank(en_passant_sq_) == ERank::rank_6 && side_ == ESide::white ||
@@ -582,108 +687,4 @@ bool TBoard::is_valid()
 
     return true;
 }
-
-FString TBoard::ToString() const
-{
-    char r[] = ".PNBRQKpnbrqk";
-    FString str;
-    for(int32 rank = ERank::rank_8; rank >= ERank::rank_1; rank--) {
-        for(int32 file = EFile::file_a; file <= EFile::file_h; file++) {
-            const auto piece = b_[ESquare::Sq120(file, rank)];
-            str += FString::Printf(TEXT("%3c"), r[piece]);
-        }
-        str += '\n';
-    }
-
-    str += "  ";
-    for(int32 file = EFile::file_a; file <= EFile::file_h; file++)
-        str += "---";
-    str += "\n    ";
-    return str;
-}
-
-bool TBoard::has_repetition()
-{
-    for(auto i = history_.Num() - fifty_move_counter_; i < history_.Num() - 1; ++i) {
-        if(history_[i].pos_key == pos_key_)
-            return true;
-    }
-    return false;
-}
-
-void TBoard::add_piece(const uint32 sq, const uint32 piece)
-{
-    MAKE_SURE(Verification::IsSquareOnBoard(sq));
-    MAKE_SURE(Verification::IsPieceValid(piece));
-
-    const auto p = pieces[piece];
-    HASH_PIECE(piece, sq);
-    b_[sq] = piece;
-
-    if(p.is_big) {
-        n_big_pieces_[p.side]++;
-        if(p.is_major)
-            n_major_pieces_[p.side]++;
-        else
-            n_minor_pieces_[p.side]++;
-    } else {
-        pawns_[p.side].SetSquare(ESquare::Sq64(sq));
-        pawns_[ESide::both].SetSquare(ESquare::Sq64(sq));
-    }
-    material_score_[p.side] += p.value;
-    piece_locations_[piece].Add(sq);
-}
-
-void TBoard::move_piece(const uint32 from, const uint32 to)
-{
-    MAKE_SURE(Verification::IsSquareOnBoard(from));
-    MAKE_SURE(Verification::IsSquareOnBoard(to));
-
-    const auto p = b_[from];
-    const auto pp = pieces[p];
-
-    HASH_PIECE(p, from);
-    b_[from] = EPieceType::empty;
-    HASH_PIECE(p, to);
-    b_[to] = p;
-
-    if(pp.is_pawn) {
-        pawns_[pp.side].ClearSquare(ESquare::Sq64(from));
-        pawns_[ESide::both].ClearSquare(ESquare::Sq64(from));
-        pawns_[pp.side].SetSquare(ESquare::Sq64(to));
-        pawns_[ESide::both].SetSquare(ESquare::Sq64(to));
-    }
-
-    for(auto& sq : piece_locations_[p]) {
-        if(sq == from) {
-            sq = to;
-            break;
-        }
-    }
-}
-
-void TBoard::clear_piece(const uint32 sq)
-{
-    MAKE_SURE(Verification::IsSquareOnBoard(sq));
-    MAKE_SURE(is_valid());
-    const auto p = b_[sq];
-    const auto pp = pieces[p];
-    MAKE_SURE(Verification::IsPieceValid(p));
-
-    HASH_PIECE(p, sq);
-    b_[sq] = EPieceType::empty;
-    material_score_[pp.side] -= pp.value;
-
-    if(pp.is_big) {
-        n_big_pieces_[pp.side]--;
-        if(pp.is_major)
-            n_major_pieces_[pp.side]--;
-        else
-            n_minor_pieces_[pp.side]--;
-    } else {
-        pawns_[pp.side].ClearSquare(ESquare::Sq64(sq));
-        pawns_[ESide::both].ClearSquare(ESquare::Sq64(sq));
-    }
-
-    piece_locations_[p].RemoveSingleSwap(sq);
-}
+#endif

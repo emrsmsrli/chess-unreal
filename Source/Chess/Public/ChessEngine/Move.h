@@ -4,22 +4,22 @@
 
 #include "UnrealString.h"
 
-class TMove
+class FMove
 {
 public:
     static const uint32 flag_en_passant = 0x40000;
     static const uint32 flag_pawn_start = 0x80000;
     static const uint32 flag_castling = 0x1000000;
 
-    static const TMove no_move;
+    static const FMove no_move;
 
 private:
     uint32 move_;
     uint32 score_ = 0;
-    explicit TMove(uint32 m);
+    explicit FMove(uint32 m);
 
 public:
-    TMove() : TMove(0) {}
+    FMove() : FMove(0) {}
 
     uint32 from() const;
     uint32 to() const;
@@ -36,11 +36,11 @@ public:
     void set_score(uint32 s);
     uint32 score() const;
 
-    static TMove create(uint32 from, uint32 to, uint32 captured, uint32 promoted, uint32 flags);
+    static FMove create(uint32 from, uint32 to, uint32 captured, uint32 promoted, uint32 flags);
 
     FString ToString() const;
-    bool operator==(const TMove& o) const;
-    bool operator!=(const TMove& o) const;
+    bool operator==(const FMove& o) const;
+    bool operator!=(const FMove& o) const;
 
 private:
     uint32 get(uint32 shift, uint32 mask) const;

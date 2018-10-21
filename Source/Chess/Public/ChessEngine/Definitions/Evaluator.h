@@ -2,24 +2,22 @@
 
 #pragma once
 
+#include "Object.h"
 #include "Platform.h"
-#include "Function.h"
+#include "Evaluator.generated.h"
 
-class TEvaluator
+UCLASS()
+class UEvaluator : public UObject
 {
-    friend class TMoveGenerator;
+    GENERATED_BODY()
 
-    class TBoard* ref_ = nullptr;
-    class TPrincipleVariationTable* pv_table_= nullptr;
-    struct search_info* search_info_ = nullptr;
-
+    friend class UMoveGenerator;
+    
 public:
-    explicit TEvaluator(TBoard* ref);
-
-    void search(struct search_info& info, const TFunction<void(class TMove)>& callback) const;
+    void Search() const;
 
 private:
-    int32 evaluate() const;
-    int32 alpha_beta(int32 alpha, int32 beta, uint32 depth, struct search_info& info, bool do_null) const;
-    int32 quiescence(int32 alpha, int32 beta, struct search_info& info) const;
+    int32 Evaluate() const;
+    int32 AlphaBeta(int32 alpha, int32 beta, uint32 depth, bool do_null) const;
+    int32 Quiescence(int32 alpha, int32 beta) const;
 };

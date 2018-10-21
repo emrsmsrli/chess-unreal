@@ -9,7 +9,7 @@ enum EPieceType
     empty, wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk
 };
 
-struct TPiece
+struct TPieceInfo
 {
     bool is_big;
     bool is_major;
@@ -26,7 +26,7 @@ struct TPiece
 
     TArray<int32> move_directions;
 
-    TPiece(const uint32 v, const uint8 s, const bool ikn,
+    TPieceInfo(const uint32 v, const uint8 s, const bool ikn,
            const bool ikg, const bool irq, const bool ibq, const TArray<int32> mdirs)
         : value(v), side(s), is_knight(ikn), is_king(ikg),
           is_rook_queen(irq), is_bishop_queen(ibq), move_directions(mdirs)
@@ -39,4 +39,4 @@ struct TPiece
     }
 };
 
-extern TPiece pieces[];
+extern TPieceInfo piece_infos[];

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Debug.h"
+#include "Object.h"
 #include "Bitboard.h"
 #include "Move.h"
 #include "Consts.h"
@@ -9,15 +11,21 @@
 #include "PrincipleVariation.h"
 #include "MoveGenerator.h"
 #include "Evaluator.h"
+#include "Board.generated.h"
 
-class TBoard
+// todo change all classes to be prefixed by U not T
+
+UCLASS()
+class UBoard : public UObject
 {
-    friend class TMoveGenerator;
-    friend class TPrincipleVariationTable;
-    friend class TEvaluator;
+    GENERATED_BODY()
+
+    friend class UMoveGenerator;
+    friend class UPrincipleVariationTable;
+    friend class UEvaluator;
 
     uint32 b_[n_board_squares_x];
-    TBitboard pawns_[3];
+    FBitboard pawns_[3];
     uint32 king_sq_[2];
     uint32 en_passant_sq_;
 
@@ -37,28 +45,29 @@ class TBoard
     uint32 ply_;
     TArray<FUndo> history_;
 
-    bool is_multiplayer_;
-
 public:
-    TBoard();
+    UBoard();
 
-    bool set(const FString& fen);
+    bool Set(const FString& fen);
 
-    bool make_move(const TMove& m);
-    void take_move();
+    bool MakeMove(const FMove& m);
+    void TakeMove();
 
     FString ToString() const;
 
 private:
-    void reset();
-    void update_material();
-    uint64 generate_pos_key();
+    void Reset();
+    void UpdateMaterial();
+    uint64 GeneratePositionKey() const;
 
-    bool is_valid();
-    bool has_repetition();
-    bool is_attacked(uint32 sq, uint8 attacking_side) const;
+    bool HasRepetition();
+    bool IsAttacked(uint32 sq, uint8 attacking_side) const;
 
-    void add_piece(uint32 sq, uint32 piece);
-    void move_piece(uint32 from, uint32 to);
-    void clear_piece(uint32 sq);
+    void AddPiece(uint32 sq, uint32 piece);
+    void MovePiece(uint32 from, uint32 to);
+    void ClearPiece(uint32 sq);
+
+#ifdef DEBUG
+    bool IsOk() const;
+#endif
 };

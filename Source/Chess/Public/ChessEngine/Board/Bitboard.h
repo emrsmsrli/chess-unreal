@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 
-class CHESS_API TBitboard
+class CHESS_API FBitboard
 {
     uint64 board_;
 public:
-    TBitboard();
+    FBitboard();
     void SetSquare(uint32 sq);
     void ClearSquare(uint32 sq);
     uint32 Pop();

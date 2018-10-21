@@ -14,22 +14,22 @@ uint32 btable[n_board_squares] = {
     48, 24, 59, 14, 12, 55, 38, 28, 58, 20, 37, 17, 36, 8
 };
 
-TBitboard::TBitboard()
+FBitboard::FBitboard()
 {
     board_ = 0;
 }
 
-void TBitboard::SetSquare(const uint32 sq)
+void FBitboard::SetSquare(const uint32 sq)
 {
     board_ |= set_mask[sq];
 }
 
-void TBitboard::ClearSquare(const uint32 sq)
+void FBitboard::ClearSquare(const uint32 sq)
 {
     board_ &= clr_mask[sq];
 }
 
-uint32 TBitboard::Pop()
+uint32 FBitboard::Pop()
 {
     const auto b = board_ ^ (board_ - 1);
     const uint32 fold = (b & 0xFFFFFFFF) ^ (b >> 32);
@@ -37,7 +37,7 @@ uint32 TBitboard::Pop()
     return btable[fold * 0x783a9b23 >> 26];
 }
 
-int32 TBitboard::Count() const
+int32 FBitboard::Count() const
 {
     auto board = board_;
     auto count = 0;
@@ -48,23 +48,23 @@ int32 TBitboard::Count() const
     return count;
 }
 
-void TBitboard::Empty()
+void FBitboard::Empty()
 {
     board_ = 0;
 }
 
-bool TBitboard::IsEmpty() const
+bool FBitboard::IsEmpty() const
 {
     return board_ == 0;
 }
 
-FString TBitboard::ToString() const
+FString FBitboard::ToString() const
 {
     FString str;
 
     const uint64 s = 1L;
-    for(int32 rank = ERank::rank_8; rank >= ERank::rank_1; --rank) {
-        for(int32 file = EFile::file_a; file <= EFile::file_h; ++file) {
+    for(auto rank : ERank::AllReversed) {
+        for(auto file : EFile::All) {
             const auto sq64 = ESquare::Sq64(file, rank);
 
             if(s << sq64 & board_)
@@ -78,7 +78,7 @@ FString TBitboard::ToString() const
     return str;
 }
 
-void TBitboard::Initialize()
+void FBitboard::Initialize()
 {
     for(uint32 i = 0; i < n_board_squares; ++i) {
         set_mask[i] = 1ULL << i;

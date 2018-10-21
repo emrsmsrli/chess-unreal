@@ -12,6 +12,8 @@
 #include "RunnableThread.h"
 #include "ThreadSafeBool.h"
 #include "Event.h"
+#include "ChessEngine.h"
+#include "Verify.h"
 
 #define INFINITE 30000
 #define MATE 29000
@@ -74,11 +76,9 @@ namespace
     };
 }
 
-class SearchThread : FRunnable
+class FMoveSearchThread : FRunnable
 {
-    static SearchThread* instance_;
-
-    TEvaluator* ref_;
+    UEvaluator* ref_;
     FRunnableThread* thread_;
     FThreadSafeBool is_killing_;
     FThreadSafeBool is_giving_up_search_;
@@ -86,19 +86,12 @@ class SearchThread : FRunnable
     FEvent* event_;
 
 public:
-    explicit SearchThread(TEvaluator* ref)
+    FMoveSearchThread()
     {
-        ref_ = ref;
         thread_ = FRunnableThread::Create(this, TEXT("SearchThread"));
         event_ = FGenericPlatformProcess::GetSynchEventFromPool(false);
         check(thread_);
         check(event_);
-    }
-
-    ~SearchThread()
-    {
-        delete thread_;
-        delete event_;
     }
 
     uint32 Run() override
@@ -131,25 +124,17 @@ public:
     }
 
     void give_up_search() { is_giving_up_search_ = true; }
-
-    static void initialize(TEvaluator* e) { instance_ = new SearchThread(e); }
-    static SearchThread* get() { return instance_; }
 };
 
-TEvaluator::TEvaluator(TBoard* ref)
-{
-    ref_ = ref;
-    pv_table_ = new TPrincipleVariationTable(ref_);
-    if(ref_->is_multiplayer_)
-        search_info_ = new search_info();
-    SearchThread::initialize(this);
-}
+//auto* search_thread = new FMoveSearchThread();
 
-void TEvaluator::search(search_info& info, const TFunction<void(TMove)>& callback) const
+void UEvaluator::Search() const
 {
-    pv_table_->empty();
-    ref_->ply_ = 0;
-    SearchThread::get()->start_search();
+    CEngine->search_info->Clear();
+    CEngine->pv_table_->Clear();
+    CEngine->board_->ply_ = 0;
+
+    //search_thread->start_search();
 
     /*best_move_ = Async<TMove>(EAsyncExecution::ThreadPool, [&]() -> TMove
     {
@@ -160,16 +145,16 @@ void TEvaluator::search(search_info& info, const TFunction<void(TMove)>& callbac
     });*/
 
     //~ iterative deepening
-    for(auto depth = 1; depth <= info.depth; ++depth) {
-        const auto best_score = alpha_beta(-INFINITE, INFINITE, depth, info, true);
+    for(auto depth = 1; depth <= CEngine->search_info->depth; ++depth) {
+        const auto best_score = AlphaBeta(-INFINITE, INFINITE, depth, true);
 
         // out of time check
 
-        const auto pvmoves = pv_table_->get_line(depth);
+        const auto pvmoves = CEngine->pv_table_->GetLine(depth);
         const auto best_move = pvmoves[0];
 
         UE_LOG(LogTemp, Log, TEXT("depth %d, score %d, move: %s, nodes %ld"), depth,
-            best_score, *best_move.ToString(), info.nodes);
+            best_score, *best_move.ToString(), CEngine->search_info->nodes);
 
         FString str = "pv";
         for(auto& move : pvmoves) {
@@ -177,109 +162,110 @@ void TEvaluator::search(search_info& info, const TFunction<void(TMove)>& callbac
         }
 
         UE_LOG(LogTemp, Log, TEXT("%s"), *str);
-        UE_LOG(LogTemp, Log, TEXT("Ordering %.2f"), info.fh == 0 ? 0 : info.fhf / info.fh);
+        UE_LOG(LogTemp, Log, TEXT("Ordering %.2f"), CEngine->search_info->fh == 0 ? 0 : CEngine->search_info->fhf /
+            CEngine->search_info->fh);
     }
 }
 
-int32 TEvaluator::evaluate() const
+int32 UEvaluator::Evaluate() const
 {
-    int32 score = ref_->material_score_[ESide::white] - ref_->material_score_[ESide::black];
+    auto* board = CEngine->board_;
+    int32 score = board->material_score_[ESide::white] - board->material_score_[ESide::black];
 
     /*~ white pawn ~*/
-    for(auto sq : ref_->piece_locations_[EPieceType::wp]) {
+    for(auto sq : board->piece_locations_[EPieceType::wp]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score += PawnTable[ESquare::Sq64(sq)];
     }
 
     /*~ black pawn ~*/
-    for(auto sq : ref_->piece_locations_[EPieceType::bp]) {
+    for(auto sq : board->piece_locations_[EPieceType::bp]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score -= PawnTable[Mirror[ESquare::Sq64(sq)]];
     }
 
     /*~ white knight ~*/
 
-    for(auto sq : ref_->piece_locations_[EPieceType::wn]) {
+    for(auto sq : board->piece_locations_[EPieceType::wn]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score += KnightTable[ESquare::Sq64(sq)];
     }
 
     /*~ black knight ~*/
-    for(auto sq : ref_->piece_locations_[EPieceType::bn]) {
+    for(auto sq : board->piece_locations_[EPieceType::bn]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score -= KnightTable[Mirror[ESquare::Sq64(sq)]];
     }
 
     /*~ white bishop ~*/
-    for(auto sq : ref_->piece_locations_[EPieceType::wb]) {
+    for(auto sq : board->piece_locations_[EPieceType::wb]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score += BishopTable[ESquare::Sq64(sq)];
     }
 
     /*~ black bishop ~*/
-    for(auto sq : ref_->piece_locations_[EPieceType::bb]) {
+    for(auto sq : board->piece_locations_[EPieceType::bb]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score -= BishopTable[Mirror[ESquare::Sq64(sq)]];
     }
 
     /*~ white rook ~*/
-    for(auto sq : ref_->piece_locations_[EPieceType::wr]) {
+    for(auto sq : board->piece_locations_[EPieceType::wr]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score += RookTable[ESquare::Sq64(sq)];
     }
 
     /*~ black rook ~*/
-    for(auto sq : ref_->piece_locations_[EPieceType::br]) {
+    for(auto sq : board->piece_locations_[EPieceType::br]) {
         MAKE_SURE(Verification::IsSquareOnBoard(sq));
         score -= RookTable[Mirror[ESquare::Sq64(sq)]];
     }
 
-    return ref_->side_ == ESide::white ? score : -score;
+    return board->side_ == ESide::white ? score : -score;
 }
 
-int32 TEvaluator::alpha_beta(int32 alpha, const int32 beta, const uint32 depth,
-                             search_info& info, const bool do_null) const
+int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth, const bool do_null) const
 {
-    MAKE_SURE(is_valid());
+    auto* board = CEngine->board_;
 
-    info.nodes++;
+    CEngine->search_info->nodes++;
 
     if(depth == 0) {
-        return evaluate();
+        return Evaluate();
     }
 
-    if(ref_->fifty_move_counter_ >= 100 || ref_->has_repetition())
+    if(board->fifty_move_counter_ >= 100 || board->HasRepetition())
         return 0; // draw
 
-    if(ref_->ply_ > max_depth - 1)
-        return evaluate();
+    if(board->ply_ > max_depth - 1)
+        return Evaluate();
 
     uint32 legal = 0;
     const auto old_alpha = alpha;
-    auto moves = ref_->generate_moves();
-    auto best_move = TMove::no_move;
+    auto moves = CEngine->move_generator_->GenerateMoves();
+    auto best_move = FMove::no_move;
 
-    moves.Sort([](const TMove& lhs, const TMove& rhs) -> bool
+    moves.Sort([](const FMove& lhs, const FMove& rhs) -> bool
     {
         return lhs.score() > rhs.score();
     });
 
     for(auto& move : moves) {
-        if(!ref_->make_move(move))
+        if(!board->MakeMove(move))
             continue;
 
         legal++;
-        const auto score = -alpha_beta(-beta, -alpha, depth - 1, info, do_null);
-        ref_->take_move();
+        const auto score = -AlphaBeta(-beta, -alpha, depth - 1, do_null);
+        board->TakeMove();
 
         if(score > alpha) {
             if(score >= beta) {
                 if(legal == 1)
-                    info.fhf++;
-                info.fh++;
+                    CEngine->search_info->fhf++;
+                CEngine->search_info->fh++;
 
                 if(!move.is_captured())
-                    info.add_killer(ref_->ply_, move);
+                    CEngine->search_info->AddKiller(board->ply_, move);
 
                 return beta;
             }
@@ -287,24 +273,24 @@ int32 TEvaluator::alpha_beta(int32 alpha, const int32 beta, const uint32 depth,
             best_move = move;
 
             if(!move.is_captured()) {
-                info.history[ref_->b_[best_move.from()]][best_move.to()] += depth;
+                CEngine->search_info->history[board->b_[best_move.from()]][best_move.to()] += depth;
             }
         }
     }
 
     if(legal == 0) {
-        if(ref_->is_attacked(ref_->king_sq_[ref_->side_], ref_->side_ ^ 1))
-            return -MATE + ref_->ply_; // mate
+        if(board->IsAttacked(board->king_sq_[board->side_], board->side_ ^ 1))
+            return -MATE + board->ply_; // mate
         return 0; // stalemate and draw
     }
 
     if(alpha != old_alpha)
-        pv_table_->add_move(best_move, ref_->pos_key_);
+        CEngine->pv_table_->AddMove(best_move, board->pos_key_);
 
     return alpha;
 }
 
-int32 TEvaluator::quiescence(int32 alpha, int32 beta, search_info& info) const
+int32 UEvaluator::Quiescence(int32 alpha, int32 beta) const
 {
     return 0;
 }

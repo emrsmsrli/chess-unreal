@@ -41,11 +41,14 @@ namespace ESquare
 
 namespace EFile
 {
+    const uint32 All[] = {file_a, file_b, file_c, file_d, file_e, file_f, file_g, file_h};
     FString AsString(uint32 file);
 }
 
 namespace ERank
 {
+    const uint32 All[] = {rank_1, rank_2, rank_3, rank_4, rank_5, rank_6, rank_7, rank_8};
+    const uint32 AllReversed[] = {rank_8, rank_7, rank_6, rank_5, rank_4, rank_3, rank_2, rank_1};
     FString AsString(uint32 rank);
 }
 

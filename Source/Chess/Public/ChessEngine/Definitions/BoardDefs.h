@@ -2,52 +2,57 @@
 
 #pragma once
 
+#include "Platform.h"
+#include "Consts.h"
+#include "Move.h"
+
+UENUM()
 enum ECastlingPermission
 {
     c_wk = 1, c_wq = 2, c_bk = 4, c_bq = 8
 };
 
-struct search_info
+struct FSearchInfo
 {
-    int starttime;
-    int stoptime;
-    int depth;
-    int timeset;
-    int movestogo;
+    int32 starttime;
+    int32 stoptime;
+    int32 depth;
+    int32 timeset;
+    int32 movestogo;
 
-    long nodes;
+    int64 nodes;
 
-    int quit;
-    int stopped;
+    int32 quit;
+    int32 stopped;
 
     float fh; // fail high
     float fhf; // fail high first
-    int nullCut;
+    int32 nullCut;
 
-    int GAME_MODE;
-    int POST_THINKING;
+    int32 GAME_MODE;
+    int32 POST_THINKING;
 
     uint32 history[n_pieces][n_board_squares];
-    TMove killers[2][max_depth];
+    FMove killers[2][max_depth];
 
-    search_info();
-    void add_killer(uint32 ply, TMove& move);
+    FSearchInfo();
+    void AddKiller(uint32 ply, FMove& move);
 
-    void reset();
+    void Clear();
 };
 
-FORCEINLINE search_info::search_info()
+FORCEINLINE FSearchInfo::FSearchInfo()
 {
-    reset();
+    Clear();
 }
 
-FORCEINLINE void search_info::add_killer(const uint32 ply, TMove& move)
+FORCEINLINE void FSearchInfo::AddKiller(const uint32 ply, FMove& move)
 {
     killers[1][ply] = killers[0][ply];
     killers[0][ply] = move;
 }
 
-FORCEINLINE void search_info::reset()
+FORCEINLINE void FSearchInfo::Clear()
 {
     starttime = 0;
     stoptime = 0;
@@ -75,7 +80,7 @@ FORCEINLINE void search_info::reset()
 
     for(auto& i : killers) {
         for(auto& j : i) {
-            j = TMove::no_move;
+            j = FMove::no_move;
         }
     }
 }
