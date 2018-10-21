@@ -452,8 +452,7 @@ bool UBoard::IsAttacked(const uint32 sq, const uint8 attacking_side) const
     // knights
     for(auto dir : piece_infos[wn].move_directions) {
         const auto p = b_[sq + dir];
-        const auto piece = piece_infos[p];
-        if(p != ESquare::offboard && piece.is_knight && piece.side == attacking_side)
+        if(p != ESquare::offboard && piece_infos[p].is_knight && piece_infos[p].side == attacking_side)
             return true;
     }
 
