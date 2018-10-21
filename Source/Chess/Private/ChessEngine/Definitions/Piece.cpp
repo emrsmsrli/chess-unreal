@@ -3,7 +3,7 @@
 #include "Piece.h"
 #include "Side.h"
 
-TPieceInfo piece_infos[] = {
+const TPieceInfo piece_infos[] = {
     {0, ESide::both, false, false, false, false, {}},
 
     {100, ESide::white, false, false, false, false, {}},
