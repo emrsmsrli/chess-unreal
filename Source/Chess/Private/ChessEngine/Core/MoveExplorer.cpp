@@ -312,12 +312,12 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
     if(board->ply_ > max_depth - 1)
         return Evaluate();
 
-    auto score = Evaluate();
-    if(score >= beta)
+    const auto stand_pat = Evaluate();
+    if(stand_pat >= beta)
         return beta;
 
-    if(score > alpha)
-        alpha = score;
+    if(stand_pat > alpha)
+        alpha = stand_pat;
     
     uint32 legal = 0;
     const auto old_alpha = alpha;
@@ -340,7 +340,7 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
             continue;
 
         legal++;
-        score = -Quiescence(-beta, -alpha);
+        const auto score = -Quiescence(-beta, -alpha);
         board->TakeMove();
 
         if(score > alpha) {
