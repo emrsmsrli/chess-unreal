@@ -8,22 +8,22 @@
 #include "Move.h"
 #include "Search.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct CHESS_API FSearchParams
 {
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess|Difficulty", 
 		meta = (ClampMax = 6, ClampMin = 1, ToolTip = "Max depth the search can go"))
-    int32 Depth;
+    int32 Depth = 1;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess|Difficulty", 
 		meta = (ClampMax = 30, ClampMin = -1, ToolTip = "Search will stop after this seconds"))
-    int32 TimeSet;
+    int32 TimeSet = -1;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess|Difficulty", 
 		meta = (ToolTip = "Should the search use null move cut"))
-    bool UseNullCut;
+    bool UseNullCut = true;
 };
 
 struct CHESS_API FSearchInfo
