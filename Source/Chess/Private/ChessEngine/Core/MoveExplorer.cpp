@@ -232,9 +232,8 @@ int32 UMoveExplorer::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth
 
     CEngine->SearchInfo->TotalVisitedNodes++;
 
-    if(depth == 0) {
-        return Evaluate();
-    }
+    if(depth == 0)
+        return Quiescence(alpha, beta);
 
     if(board->fifty_move_counter_ >= 100 || board->HasRepetition())
         return 0; // draw
@@ -302,7 +301,63 @@ int32 UMoveExplorer::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth
     return alpha;
 }
 
-int32 UMoveExplorer::Quiescence(int32 alpha, int32 beta) const
+int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
 {
-    return 0;
+    auto* board = CEngine->board_;
+    MAKE_SURE(board->IsOk())
+
+    if(board->fifty_move_counter_ >= 100 || board->HasRepetition())
+        return 0; // draw
+
+    if(board->ply_ > max_depth - 1)
+        return Evaluate();
+
+    auto score = Evaluate();
+    if(score >= beta)
+        return beta;
+
+    if(score > alpha)
+        alpha = score;
+    
+    uint32 legal = 0;
+    const auto old_alpha = alpha;
+    auto best_move = FMove::no_move;
+    auto moves = CEngine->move_generator_->GenerateMoves();
+
+    // only process captured moves
+    moves = moves.FilterByPredicate([](const FMove& move) -> bool
+    {
+        return move.IsCaptured();
+    });
+    
+    moves.Sort([](const FMove& lhs, const FMove& rhs) -> bool
+    {
+        return lhs.GetScore() > rhs.GetScore();
+    });
+
+    for(auto& move : moves) {
+        if(!board->MakeMove(move))
+            continue;
+
+        legal++;
+        score = -Quiescence(-beta, -alpha);
+        board->TakeMove();
+
+        if(score > alpha) {
+            if(score >= beta) {
+                if(legal == 1)
+                    CEngine->SearchInfo->F_H_F++;
+                CEngine->SearchInfo->F_H++;
+
+                return beta;
+            }
+            alpha = score;
+            best_move = move;
+        }
+    }
+
+    if(alpha != old_alpha)
+        CEngine->pv_table_->AddMove(best_move, CEngine->board_->pos_key_);
+
+    return alpha;
 }
