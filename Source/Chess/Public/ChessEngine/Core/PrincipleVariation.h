@@ -8,10 +8,14 @@
 #include "Move.h"
 #include "PrincipleVariation.generated.h"
 
+class UMoveExplorer;
+
 UCLASS()
 class CHESS_API UPrincipleVariationTable : public UObject
 {
     GENERATED_BODY()
+
+    friend UMoveExplorer;
 
     TMap<uint64, FMove> table_; // pos_key, move
 

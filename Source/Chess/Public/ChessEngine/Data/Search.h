@@ -38,6 +38,7 @@ struct CHESS_API FSearchInfo
     // fail high first
     float F_H_F = 0; 
 
+    // heuristics for better move ordering
     uint32 History[n_pieces][n_board_squares]{};
     FMove Killers[2][max_depth];
 

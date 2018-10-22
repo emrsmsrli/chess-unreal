@@ -8,6 +8,10 @@
 #include "Search.h"
 #include "ChessEngine.h"
 
+#define CAPTURE_SCORE 1000000
+#define FIRST_KILLER_SCORE 900000
+#define SECOND_KILLER_SCORE 800000
+
 using ::EPieceType;
 
 namespace
@@ -195,9 +199,9 @@ void UMoveGenerator::AddQuietMove(FMove move, TArray<FMove>& moves) const
 {
     if(CEngine->bIsMultiplayer) {
         if(CEngine->SearchInfo->GetKiller(0, CEngine->board_->ply_) == move) {
-            move.SetScore(900000);
+            move.SetScore(FIRST_KILLER_SCORE);
         } else if(CEngine->SearchInfo->GetKiller(1, CEngine->board_->ply_) == move) {
-            move.SetScore(800000);
+            move.SetScore(SECOND_KILLER_SCORE);
         } else {
             const auto score = CEngine->SearchInfo->GetHistory(CEngine->board_->b_[move.From()], move.To());
             move.SetScore(score);
@@ -209,14 +213,14 @@ void UMoveGenerator::AddQuietMove(FMove move, TArray<FMove>& moves) const
 void UMoveGenerator::AddCaptureMove(FMove move, TArray<FMove>& moves) const
 {
     if(CEngine->bIsMultiplayer)
-        move.SetScore(mvv_lva_scores[move.CapturedPiece()][CEngine->board_->b_[move.From()]] + 1000000);
+        move.SetScore(mvv_lva_scores[move.CapturedPiece()][CEngine->board_->b_[move.From()]] + CAPTURE_SCORE);
     moves.Add(move);
 }
 
 void UMoveGenerator::AddEnPassantMove(FMove move, TArray<FMove>& moves) const
 {
     if(CEngine->bIsMultiplayer)
-        move.SetScore(105 + 1000000);
+        move.SetScore(105 + CAPTURE_SCORE); // pawn takes pawn 
     moves.Add(move);
 }
 

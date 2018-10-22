@@ -18,6 +18,8 @@
 #define INFINITE 30000
 #define MATE 29000
 
+#define PV_MOVE_SCORE 2000000
+
 namespace
 {
     const int32 PawnTable[64] = {
@@ -244,6 +246,16 @@ int32 UMoveExplorer::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth
     const auto old_alpha = alpha;
     auto moves = CEngine->move_generator_->GenerateMoves();
     auto best_move = FMove::no_move;
+
+    // pv move heuristic
+    const auto pv_move = CEngine->pv_table_->probe();
+    if(pv_move != FMove::no_move) {
+        const auto m = moves.FindByPredicate([&pv_move](const FMove& mm) -> bool
+        {
+            return mm == pv_move;
+        });
+        if(m) m->SetScore(PV_MOVE_SCORE);
+    }
 
     moves.Sort([](const FMove& lhs, const FMove& rhs) -> bool
     {
