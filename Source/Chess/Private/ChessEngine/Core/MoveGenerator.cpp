@@ -2,10 +2,10 @@
 
 #include "MoveGenerator.h"
 #include "Verify.h"
-#include "Piece.h"
+#include "PieceInfo.h"
 #include "Board.h"
 #include "Debug.h"
-#include "BoardDefs.h"
+#include "Search.h"
 #include "ChessEngine.h"
 
 using ::EPieceType;
@@ -138,10 +138,8 @@ void UMoveGenerator::GenerateNonSlidingMoves(const uint32 sq, TArray<FMove>& mov
 
 void UMoveGenerator::GenerateCastlingMoves(TArray<FMove>& moves) const
 {
-    using ::ECastlingPermission;
-
     if(CEngine->board_->side_ == ESide::white) {
-        if(CEngine->board_->cast_perm_ & c_wk) {
+        if(CEngine->board_->cast_perm_ & ECastlingPermission::c_wk) {
             if(CEngine->board_->b_[ESquare::f1] == empty && CEngine->board_->b_[ESquare::g1] == empty) {
                 if(!CEngine->board_->IsAttacked(ESquare::e1, ESide::black) && !CEngine
                                                                                ->board_->IsAttacked(
@@ -152,7 +150,7 @@ void UMoveGenerator::GenerateCastlingMoves(TArray<FMove>& moves) const
             }
         }
 
-        if(CEngine->board_->cast_perm_ & c_wq) {
+        if(CEngine->board_->cast_perm_ & ECastlingPermission::c_wq) {
             if(CEngine->board_->b_[ESquare::d1] == empty
                 && CEngine->board_->b_[ESquare::c1] == empty
                 && CEngine->board_->b_[ESquare::b1] == empty) {
@@ -195,12 +193,12 @@ void UMoveGenerator::GenerateCastlingMoves(TArray<FMove>& moves) const
 void UMoveGenerator::AddQuietMove(FMove move, TArray<FMove>& moves) const
 {
     if(CEngine->bIsMultiplayer) {
-        if(CEngine->search_info->killers[0][CEngine->board_->ply_] == move) {
+        if(CEngine->SearchInfo->killers[0][CEngine->board_->ply_] == move) {
             move.set_score(900000);
-        } else if(CEngine->search_info->killers[1][CEngine->board_->ply_] == move) {
+        } else if(CEngine->SearchInfo->killers[1][CEngine->board_->ply_] == move) {
             move.set_score(800000);
         } else {
-            move.set_score(CEngine->search_info->history[CEngine->board_->b_[move.from()]][move.to()]);
+            move.set_score(CEngine->SearchInfo->history[CEngine->board_->b_[move.from()]][move.to()]);
         }
     }
     moves.Add(move);

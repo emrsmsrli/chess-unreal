@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Side.h"
-#include "Piece.h"
+#include "PieceInfo.h"
 #include "Square.h"
 
 class CHESS_API Verification

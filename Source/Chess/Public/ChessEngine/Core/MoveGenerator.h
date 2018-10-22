@@ -31,5 +31,5 @@ private:
 
     void AddPawnRegularMove(uint32 from, uint32 to, TArray<FMove>& moves) const;
     void AddPawnCaptureMove(uint32 from, uint32 to,
-                               uint32 captured, TArray<FMove>& moves) const;
+                            uint32 captured, TArray<FMove>& moves) const;
 };

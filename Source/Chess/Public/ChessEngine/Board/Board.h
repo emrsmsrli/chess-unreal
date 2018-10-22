@@ -10,7 +10,7 @@
 #include "Undo.h"
 #include "PrincipleVariation.h"
 #include "MoveGenerator.h"
-#include "Evaluator.h"
+#include "MoveExplorer.h"
 #include "Board.generated.h"
 
 class UMoveGenerator;

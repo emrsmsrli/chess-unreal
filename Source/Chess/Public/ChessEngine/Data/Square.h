@@ -5,6 +5,14 @@
 #include "ObjectMacros.h"
 
 UENUM()
+namespace ECastlingPermission
+{
+    enum Type {
+        c_wk = 1, c_wq = 2, c_bk = 4, c_bq = 8
+	};
+}
+
+UENUM()
 namespace EFile
 {
     enum Type

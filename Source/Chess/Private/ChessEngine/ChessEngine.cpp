@@ -6,7 +6,7 @@
 #include "PosKey.h"
 #include "Square.h"
 #include "Debug.h"
-#include "BoardDefs.h"
+#include "Search.h"
 
 UChessEngine* CEngine = nullptr;
 
@@ -26,7 +26,12 @@ UChessEngine::UChessEngine()
     move_generator_ = NewObject<UMoveGenerator>();
     evaluator_ = NewObject<UEvaluator>();
     pv_table_ = NewObject<UPrincipleVariationTable>();
-    search_info = new FSearchInfo();
+    SearchInfo = new FSearchInfo();
+}
+
+void UChessEngine::Set(FString& fen) const
+{
+    board_->Set(fen);
 }
 
 void UChessEngine::Search() const
@@ -35,11 +40,6 @@ void UChessEngine::Search() const
 }
 
 #ifdef DEBUG
-void UChessEngine::Set(FString& fen) const
-{
-    board_->Set(fen);
-}
-
 void UChessEngine::Perft(const int32 depth, int64* leaf_nodes) const
 {
     if(depth == 0) {

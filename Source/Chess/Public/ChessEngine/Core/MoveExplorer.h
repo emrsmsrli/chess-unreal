@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Object.h"
-#include "Evaluator.generated.h"
+#include "MoveExplorer.generated.h"
 
 class UMoveGenerator;
 

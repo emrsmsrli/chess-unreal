@@ -2,7 +2,9 @@
 
 #pragma once
 
-#include "UnrealString.h"
+#include "CoreTypes.h"
+
+class FString;
 
 class CHESS_API FMove
 {

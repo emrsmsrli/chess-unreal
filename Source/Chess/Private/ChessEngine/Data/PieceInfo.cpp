@@ -1,6 +1,6 @@
 // Copyright 2018 Emre Simsirli
 
-#include "Piece.h"
+#include "PieceInfo.h"
 #include "Side.h"
 
 const TPieceInfo piece_infos[] = {

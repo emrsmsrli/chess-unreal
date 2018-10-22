@@ -6,25 +6,36 @@
 #include "Debug.h"
 #include "ChessEngine.generated.h"
 
+class UPrincipleVariationTable;
+class UMoveGenerator;
+class UEvaluator;
+class FMove;
+class UBoard;
+struct FSearchInfo;
+
+DECLARE_DELEGATE_OneParam(DMoveFoundDelegate, FMove)
+
 UCLASS()
 class CHESS_API UChessEngine : public UObject
 {
     GENERATED_BODY()
 
-    friend class UPrincipleVariationTable;
-    friend class UMoveGenerator;
-    friend class UEvaluator;
+    friend UPrincipleVariationTable;
+    friend UMoveGenerator;
+    friend UEvaluator;
 
-    class UBoard* board_;
-    class UMoveGenerator* move_generator_;
-    class UEvaluator* evaluator_;
-    class UPrincipleVariationTable* pv_table_;
+    UBoard* board_;
+    UMoveGenerator* move_generator_;
+    UEvaluator* evaluator_;
+    UPrincipleVariationTable* pv_table_;
 
 public:
     bool bIsMultiplayer = true;
-    struct FSearchInfo* search_info;
+    FSearchInfo* SearchInfo;
+    DMoveFoundDelegate MoveFoundDelegate;
 
     UChessEngine();
+    void Set(FString& fen) const;
 
     void Search() const;
     // void SaveGame();
@@ -33,7 +44,6 @@ public:
     static void Initialize();
 
 #ifdef DEBUG
-    void Set(FString& fen) const;
     FString Perft(int32 depth) const;
 
 private:

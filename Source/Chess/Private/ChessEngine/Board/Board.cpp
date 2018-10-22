@@ -1,9 +1,9 @@
 // Copyright 2018 Emre Simsirli
 
 #include "Board.h"
-#include "BoardDefs.h"
+#include "Search.h"
 #include "PosKey.h"
-#include "Piece.h"
+#include "PieceInfo.h"
 #include "Square.h"
 #include "Undo.h"
 #include "Verify.h"

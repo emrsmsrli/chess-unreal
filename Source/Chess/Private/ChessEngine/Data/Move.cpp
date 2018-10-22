@@ -1,7 +1,8 @@
 // Copyright 2018 Emre Simsirli
 
 #include "Move.h"
-#include "Piece.h"
+#include "UnrealString.h"
+#include "PieceInfo.h"
 #include "Square.h"
 
 namespace

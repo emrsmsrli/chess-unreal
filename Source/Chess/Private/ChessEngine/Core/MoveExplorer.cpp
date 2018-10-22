@@ -1,12 +1,12 @@
 // Copyright 2018 Emre Simsirli
 
-#include "Evaluator.h"
+#include "MoveExplorer.h"
 #include "Board.h"
 #include "Debug.h"
 #include "Square.h"
 #include "Side.h"
-#include "Piece.h"
-#include "BoardDefs.h"
+#include "PieceInfo.h"
+#include "Search.h"
 #include "PrincipleVariation.h"
 #include "Runnable.h"
 #include "RunnableThread.h"
@@ -130,7 +130,7 @@ public:
 
 void UEvaluator::Search() const
 {
-    CEngine->search_info->Clear();
+    CEngine->SearchInfo->Clear();
     CEngine->pv_table_->Clear();
     CEngine->board_->ply_ = 0;
 
@@ -145,7 +145,7 @@ void UEvaluator::Search() const
     });*/
 
     //~ iterative deepening
-    for(auto depth = 1; depth <= CEngine->search_info->depth; ++depth) {
+    for(auto depth = 1; depth <= CEngine->SearchInfo->depth; ++depth) {
         const auto best_score = AlphaBeta(-INFINITE, INFINITE, depth, true);
 
         // out of time check
@@ -154,7 +154,7 @@ void UEvaluator::Search() const
         const auto best_move = pvmoves[0];
 
         UE_LOG(LogTemp, Log, TEXT("depth %d, score %d, move: %s, nodes %ld"), depth,
-            best_score, *best_move.ToString(), CEngine->search_info->nodes);
+            best_score, *best_move.ToString(), CEngine->SearchInfo->nodes);
 
         FString str = "pv";
         for(auto& move : pvmoves) {
@@ -162,8 +162,8 @@ void UEvaluator::Search() const
         }
 
         UE_LOG(LogTemp, Log, TEXT("%s"), *str);
-        UE_LOG(LogTemp, Log, TEXT("Ordering %.2f"), CEngine->search_info->fh == 0 ? 0 : CEngine->search_info->fhf /
-            CEngine->search_info->fh);
+        UE_LOG(LogTemp, Log, TEXT("Ordering %.2f"), CEngine->SearchInfo->fh == 0 ? 0 : CEngine->SearchInfo->fhf /
+            CEngine->SearchInfo->fh);
     }
 }
 
@@ -228,7 +228,7 @@ int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth, c
 {
     auto* board = CEngine->board_;
 
-    CEngine->search_info->nodes++;
+    CEngine->SearchInfo->nodes++;
 
     if(depth == 0) {
         return Evaluate();
@@ -261,11 +261,11 @@ int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth, c
         if(score > alpha) {
             if(score >= beta) {
                 if(legal == 1)
-                    CEngine->search_info->fhf++;
-                CEngine->search_info->fh++;
+                    CEngine->SearchInfo->fhf++;
+                CEngine->SearchInfo->fh++;
 
                 if(!move.is_captured())
-                    CEngine->search_info->AddKiller(board->ply_, move);
+                    CEngine->SearchInfo->AddKiller(board->ply_, move);
 
                 return beta;
             }
@@ -273,7 +273,7 @@ int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth, c
             best_move = move;
 
             if(!move.is_captured()) {
-                CEngine->search_info->history[board->b_[best_move.from()]][best_move.to()] += depth;
+                CEngine->SearchInfo->history[board->b_[best_move.from()]][best_move.to()] += depth;
             }
         }
     }
