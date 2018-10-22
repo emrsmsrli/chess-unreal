@@ -19,6 +19,6 @@ public:
 
 private:
     int32 Evaluate() const;
-    int32 AlphaBeta(int32 alpha, int32 beta, uint32 depth, bool do_null) const;
+    int32 AlphaBeta(int32 alpha, int32 beta, uint32 depth) const;
     int32 Quiescence(int32 alpha, int32 beta) const;
 };

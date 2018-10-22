@@ -145,8 +145,8 @@ void UEvaluator::Search() const
     });*/
 
     //~ iterative deepening
-    for(auto depth = 1; depth <= CEngine->SearchInfo->depth; ++depth) {
-        const auto best_score = AlphaBeta(-INFINITE, INFINITE, depth, true);
+    for(auto depth = 1; depth <= CEngine->SearchParams->Depth; ++depth) {
+        const auto best_score = AlphaBeta(-INFINITE, INFINITE, depth);
 
         // out of time check
 
@@ -154,7 +154,7 @@ void UEvaluator::Search() const
         const auto best_move = pvmoves[0];
 
         UE_LOG(LogTemp, Log, TEXT("depth %d, score %d, move: %s, nodes %ld"), depth,
-            best_score, *best_move.ToString(), CEngine->SearchInfo->nodes);
+            best_score, *best_move.ToString(), CEngine->SearchInfo->TotalVisitedNodes);
 
         FString str = "pv";
         for(auto& move : pvmoves) {
@@ -162,8 +162,8 @@ void UEvaluator::Search() const
         }
 
         UE_LOG(LogTemp, Log, TEXT("%s"), *str);
-        UE_LOG(LogTemp, Log, TEXT("Ordering %.2f"), CEngine->SearchInfo->fh == 0 ? 0 : CEngine->SearchInfo->fhf /
-            CEngine->SearchInfo->fh);
+        UE_LOG(LogTemp, Log, TEXT("Ordering %.2f"), CEngine->SearchInfo->F_H == 0 ? 0 : 
+			CEngine->SearchInfo->F_H_F / CEngine->SearchInfo->F_H);
     }
 }
 
@@ -224,11 +224,11 @@ int32 UEvaluator::Evaluate() const
     return board->side_ == ESide::white ? score : -score;
 }
 
-int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth, const bool do_null) const
+int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth) const
 {
     auto* board = CEngine->board_;
 
-    CEngine->SearchInfo->nodes++;
+    CEngine->SearchInfo->TotalVisitedNodes++;
 
     if(depth == 0) {
         return Evaluate();
@@ -255,14 +255,14 @@ int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth, c
             continue;
 
         legal++;
-        const auto score = -AlphaBeta(-beta, -alpha, depth - 1, do_null);
+        const auto score = -AlphaBeta(-beta, -alpha, depth - 1);
         board->TakeMove();
 
         if(score > alpha) {
             if(score >= beta) {
                 if(legal == 1)
-                    CEngine->SearchInfo->fhf++;
-                CEngine->SearchInfo->fh++;
+                    CEngine->SearchInfo->F_H_F++;
+                CEngine->SearchInfo->F_H++;
 
                 if(!move.is_captured())
                     CEngine->SearchInfo->AddKiller(board->ply_, move);
@@ -273,7 +273,7 @@ int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth, c
             best_move = move;
 
             if(!move.is_captured()) {
-                CEngine->SearchInfo->history[board->b_[best_move.from()]][best_move.to()] += depth;
+                CEngine->SearchInfo->AddHistory(board->b_[best_move.from()], best_move.to(), depth);
             }
         }
     }

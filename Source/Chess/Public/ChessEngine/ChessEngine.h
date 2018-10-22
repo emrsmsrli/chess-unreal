@@ -12,6 +12,7 @@ class UEvaluator;
 class FMove;
 class UBoard;
 struct FSearchInfo;
+struct FSearchParams;
 
 DECLARE_DELEGATE_OneParam(DMoveFoundDelegate, FMove)
 
@@ -32,6 +33,7 @@ class CHESS_API UChessEngine : public UObject
 public:
     bool bIsMultiplayer = true;
     FSearchInfo* SearchInfo;
+    FSearchParams* SearchParams;
     DMoveFoundDelegate MoveFoundDelegate;
 
     UChessEngine();

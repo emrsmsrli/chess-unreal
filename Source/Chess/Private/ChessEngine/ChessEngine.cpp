@@ -27,6 +27,7 @@ UChessEngine::UChessEngine()
     evaluator_ = NewObject<UEvaluator>();
     pv_table_ = NewObject<UPrincipleVariationTable>();
     SearchInfo = new FSearchInfo();
+    SearchParams = new FSearchParams();
 }
 
 void UChessEngine::Set(FString& fen) const

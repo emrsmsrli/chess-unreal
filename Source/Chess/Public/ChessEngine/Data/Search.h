@@ -9,33 +9,43 @@
 #include "Search.generated.h"
 
 USTRUCT()
-struct CHESS_API FSearchInfo
+struct CHESS_API FSearchParams
 {
     GENERATED_BODY()
 
-    int32 starttime;
-    int32 stoptime;
-    int32 depth;
-    int32 timeset;
-    int32 movestogo;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess|Difficulty", 
+		meta = (ClampMax = 6, ClampMin = 1, ToolTip = "Max depth the search can go"))
+    int32 Depth;
 
-    int64 nodes;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess|Difficulty", 
+		meta = (ClampMax = 30, ClampMin = -1, ToolTip = "Search will stop after this seconds"))
+    int32 TimeSet;
 
-    int32 quit;
-    int32 stopped;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess|Difficulty", 
+		meta = (ToolTip = "Should the search use null move cut"))
+    bool UseNullCut;
+};
 
-    float fh; // fail high
-    float fhf; // fail high first
-    int32 nullCut;
+struct CHESS_API FSearchInfo
+{
+    int32 StartTime = 0;
+    int32 StopTime = 0;
 
-    int32 GAME_MODE;
-    int32 POST_THINKING;
+    int64 TotalVisitedNodes = 0;
+    
+    // fail high
+    float F_H = 0;
+    // fail high first
+    float F_H_F = 0; 
 
-    uint32 history[n_pieces][n_board_squares];
-    FMove killers[2][max_depth];
+    uint32 History[n_pieces][n_board_squares]{};
+    FMove Killers[2][max_depth];
 
     FSearchInfo();
     void AddKiller(uint32 ply, FMove& move);
+    void AddHistory(uint32 piece, uint32 sq, uint32 depth);
+    FMove GetKiller(uint32 index, uint32 ply);
+    uint32 GetHistory(uint32 piece, uint32 sq);
 
     void Clear();
 };

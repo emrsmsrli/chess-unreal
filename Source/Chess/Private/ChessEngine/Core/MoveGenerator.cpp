@@ -18,8 +18,8 @@ namespace
 
 void UMoveGenerator::Initialize()
 {
-    for(uint32 attacker = EPieceType::wp; attacker <= EPieceType::bk; attacker++)
-        for(uint32 victim = EPieceType::wp; victim <= EPieceType::bk; victim++)
+    for(uint32 attacker = wp; attacker <= bk; attacker++)
+        for(uint32 victim = wp; victim <= bk; victim++)
             mvv_lva_scores[victim][attacker] = victim_score[victim] + 6 - victim_score[attacker] / 100;
 }
 
@@ -193,12 +193,13 @@ void UMoveGenerator::GenerateCastlingMoves(TArray<FMove>& moves) const
 void UMoveGenerator::AddQuietMove(FMove move, TArray<FMove>& moves) const
 {
     if(CEngine->bIsMultiplayer) {
-        if(CEngine->SearchInfo->killers[0][CEngine->board_->ply_] == move) {
+        if(CEngine->SearchInfo->GetKiller(0, CEngine->board_->ply_) == move) {
             move.set_score(900000);
-        } else if(CEngine->SearchInfo->killers[1][CEngine->board_->ply_] == move) {
+        } else if(CEngine->SearchInfo->GetKiller(1, CEngine->board_->ply_) == move) {
             move.set_score(800000);
         } else {
-            move.set_score(CEngine->SearchInfo->history[CEngine->board_->b_[move.from()]][move.to()]);
+            const auto score = CEngine->SearchInfo->GetHistory(CEngine->board_->b_[move.from()], move.to());
+            move.set_score(score);
         }
     }
     moves.Add(move);

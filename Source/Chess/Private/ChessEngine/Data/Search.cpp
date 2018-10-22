@@ -9,37 +9,42 @@ FSearchInfo::FSearchInfo()
 
 void FSearchInfo::AddKiller(const uint32 ply, FMove& move)
 {
-    killers[1][ply] = killers[0][ply];
-    killers[0][ply] = move;
+    Killers[1][ply] = Killers[0][ply];
+    Killers[0][ply] = move;
+}
+
+void FSearchInfo::AddHistory(const uint32 piece, const uint32 sq, const uint32 depth)
+{
+    History[piece][sq] += depth;
+}
+
+FMove FSearchInfo::GetKiller(const uint32 index, const uint32 ply)
+{
+    return Killers[index][ply];
+}
+
+uint32 FSearchInfo::GetHistory(const uint32 piece, const uint32 sq)
+{
+    return History[piece][sq];
 }
 
 void FSearchInfo::Clear()
 {
-    starttime = 0;
-    stoptime = 0;
-    depth = 0;
-    timeset = 0;
-    movestogo = 0;
+    StartTime = 0;
+    StopTime = 0;
 
-    nodes = 0;
+    TotalVisitedNodes = 0;
 
-    quit = 0;
-    stopped = 0;
+    F_H = 0;
+    F_H_F = 0;
 
-    fh = 0;
-    fhf = 0;
-    nullCut = 0;
-
-    GAME_MODE = 0;
-    POST_THINKING = 0;
-
-    for(auto& i : history) {
+    for(auto& i : History) {
         for(auto& j : i) {
             j = 0;
         }
     }
 
-    for(auto& i : killers) {
+    for(auto& i : Killers) {
         for(auto& j : i) {
             j = FMove::no_move;
         }
