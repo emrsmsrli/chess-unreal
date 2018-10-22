@@ -78,7 +78,7 @@ namespace
 
 class FMoveSearchThread : FRunnable
 {
-    UEvaluator* ref_;
+    UMoveExplorer* ref_;
     FRunnableThread* thread_;
     FThreadSafeBool is_killing_;
     FThreadSafeBool is_giving_up_search_;
@@ -128,7 +128,7 @@ public:
 
 //auto* search_thread = new FMoveSearchThread();
 
-void UEvaluator::Search() const
+void UMoveExplorer::Search() const
 {
     CEngine->SearchInfo->Clear();
     CEngine->pv_table_->Clear();
@@ -167,7 +167,7 @@ void UEvaluator::Search() const
     }
 }
 
-int32 UEvaluator::Evaluate() const
+int32 UMoveExplorer::Evaluate() const
 {
     auto* board = CEngine->board_;
     int32 score = board->material_score_[ESide::white] - board->material_score_[ESide::black];
@@ -224,7 +224,7 @@ int32 UEvaluator::Evaluate() const
     return board->side_ == ESide::white ? score : -score;
 }
 
-int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth) const
+int32 UMoveExplorer::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth) const
 {
     auto* board = CEngine->board_;
 
@@ -290,7 +290,7 @@ int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth) c
     return alpha;
 }
 
-int32 UEvaluator::Quiescence(int32 alpha, int32 beta) const
+int32 UMoveExplorer::Quiescence(int32 alpha, int32 beta) const
 {
     return 0;
 }

@@ -8,7 +8,7 @@
 class UMoveGenerator;
 
 UCLASS()
-class CHESS_API UEvaluator : public UObject
+class CHESS_API UMoveExplorer : public UObject
 {
     GENERATED_BODY()
 

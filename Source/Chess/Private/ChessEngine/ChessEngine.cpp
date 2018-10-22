@@ -24,7 +24,7 @@ UChessEngine::UChessEngine()
 
     board_ = NewObject<UBoard>();   
     move_generator_ = NewObject<UMoveGenerator>();
-    evaluator_ = NewObject<UEvaluator>();
+    evaluator_ = NewObject<UMoveExplorer>();
     pv_table_ = NewObject<UPrincipleVariationTable>();
     SearchInfo = new FSearchInfo();
     SearchParams = new FSearchParams();

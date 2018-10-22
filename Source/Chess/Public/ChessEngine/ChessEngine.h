@@ -8,7 +8,7 @@
 
 class UPrincipleVariationTable;
 class UMoveGenerator;
-class UEvaluator;
+class UMoveExplorer;
 class FMove;
 class UBoard;
 struct FSearchInfo;
@@ -23,11 +23,11 @@ class CHESS_API UChessEngine : public UObject
 
     friend UPrincipleVariationTable;
     friend UMoveGenerator;
-    friend UEvaluator;
+    friend UMoveExplorer;
 
     UBoard* board_;
     UMoveGenerator* move_generator_;
-    UEvaluator* evaluator_;
+    UMoveExplorer* evaluator_;
     UPrincipleVariationTable* pv_table_;
 
 public:

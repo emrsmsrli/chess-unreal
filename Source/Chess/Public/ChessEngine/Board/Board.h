@@ -15,7 +15,7 @@
 
 class UMoveGenerator;
 class UPrincipleVariationTable;
-class UEvaluator;
+class UMoveExplorer;
 
 UCLASS()
 class CHESS_API UBoard : public UObject
@@ -24,7 +24,7 @@ class CHESS_API UBoard : public UObject
 
     friend UMoveGenerator;
     friend UPrincipleVariationTable;
-    friend UEvaluator;
+    friend UMoveExplorer;
 
     uint32 b_[n_board_squares_x];
     FBitboard pawns_[3];

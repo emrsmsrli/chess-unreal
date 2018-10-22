@@ -13,6 +13,7 @@ using ::EPieceType;
 namespace
 {
     const uint32 victim_score[] = {0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600};
+    // most valuable victim - least valuable attacker
     int32 mvv_lva_scores[n_pieces][n_pieces];
 }
 
