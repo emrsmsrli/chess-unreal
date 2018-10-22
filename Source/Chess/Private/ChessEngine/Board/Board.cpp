@@ -223,17 +223,17 @@ void UBoard::UpdateMaterial()
         const auto piece = b_[sq];
         if(piece != ESquare::offboard && piece != EPieceType::empty) {
             const auto piece_info = piece_infos[piece];
-            const auto side = piece_info.side;
+            const auto side = piece_info.Side;
 
-            if(piece_info.is_big) {
+            if(piece_info.bIsBig) {
                 n_big_pieces_[side]++;
-                if(piece_info.is_major)
+                if(piece_info.bIsMajor)
                     n_major_pieces_[side]++;
-                else if(piece_info.is_minor)
+                else if(piece_info.bIsMinor)
                     n_minor_pieces_[side]++;
             }
 
-            material_score_[side] += piece_info.value;
+            material_score_[side] += piece_info.Value;
             piece_locations_[piece].Add(sq);
 
             switch(piece) {
@@ -324,7 +324,7 @@ bool UBoard::MakeMove(const FMove& m)
     ply_++;
     history_.Add(u);
 
-    if(piece_infos[b_[from]].is_pawn) {
+    if(piece_infos[b_[from]].bIsPawn) {
         fifty_move_counter_ = 0;
         if(m.IsPawnStart()) {
             if(side == ESide::white) {
@@ -347,7 +347,7 @@ bool UBoard::MakeMove(const FMove& m)
         AddPiece(to, promoted);
     }
 
-    if(piece_infos[b_[to]].is_king) {
+    if(piece_infos[b_[to]].bIsKing) {
         king_sq_[side] = to;
     }
 
@@ -414,7 +414,7 @@ void UBoard::TakeMove()
 
     MovePiece(to, from);
 
-    if(piece_infos[b_[from]].is_king) {
+    if(piece_infos[b_[from]].bIsKing) {
         king_sq_[side_] = from;
     }
 
@@ -428,7 +428,7 @@ void UBoard::TakeMove()
     if(h.move.IsPromoted()) {
         MAKE_SURE(Verification::IsPieceValid(promoted) && !piece_infos[promoted].is_pawn);
         ClearPiece(from);
-        AddPiece(from, piece_infos[promoted].side == ESide::white ? EPieceType::wp : EPieceType::bp);
+        AddPiece(from, piece_infos[promoted].Side == ESide::white ? EPieceType::wp : EPieceType::bp);
     }
 
     MAKE_SURE(IsOk());
@@ -450,19 +450,19 @@ bool UBoard::IsAttacked(const uint32 sq, const uint8 attacking_side) const
     }
 
     // knights
-    for(auto dir : piece_infos[wn].move_directions) {
+    for(auto dir : piece_infos[wn].MoveDirections) {
         const auto p = b_[sq + dir];
-        if(p != ESquare::offboard && piece_infos[p].is_knight && piece_infos[p].side == attacking_side)
+        if(p != ESquare::offboard && piece_infos[p].bIsKnight && piece_infos[p].Side == attacking_side)
             return true;
     }
 
     // rooks & queens
-    for(auto dir : piece_infos[wr].move_directions) {
+    for(auto dir : piece_infos[wr].MoveDirections) {
         auto sqq = sq + dir;
         auto piece = b_[sqq];
         while(piece != ESquare::offboard) {
             if(piece != empty) {
-                if(piece_infos[piece].is_rook_queen && piece_infos[piece].side == attacking_side)
+                if(piece_infos[piece].bIsRookOrQueen && piece_infos[piece].Side == attacking_side)
                     return true;
                 break;
             }
@@ -472,12 +472,12 @@ bool UBoard::IsAttacked(const uint32 sq, const uint8 attacking_side) const
     }
 
     // bishops & queens
-    for(auto dir : piece_infos[wb].move_directions) {
+    for(auto dir : piece_infos[wb].MoveDirections) {
         auto sqq = sq + dir;
         auto piece = b_[sqq];
         while(piece != ESquare::offboard) {
             if(piece != empty) {
-                if(piece_infos[piece].is_bishop_queen && piece_infos[piece].side == attacking_side)
+                if(piece_infos[piece].bIsBishopOrQueen && piece_infos[piece].Side == attacking_side)
                     return true;
                 break;
             }
@@ -487,9 +487,9 @@ bool UBoard::IsAttacked(const uint32 sq, const uint8 attacking_side) const
     }
 
     // kings
-    for(auto dir : piece_infos[wk].move_directions) {
+    for(auto dir : piece_infos[wk].MoveDirections) {
         const auto piece = b_[sq + dir];
-        if(piece != ESquare::offboard && piece_infos[piece].is_king && piece_infos[piece].side == attacking_side)
+        if(piece != ESquare::offboard && piece_infos[piece].bIsKing && piece_infos[piece].Side == attacking_side)
             return true;
     }
 
@@ -514,17 +514,17 @@ void UBoard::AddPiece(const uint32 sq, const uint32 piece)
     HASH_PIECE(piece, sq);
     b_[sq] = piece;
 
-    if(piece_info.is_big) {
-        n_big_pieces_[piece_info.side]++;
-        if(piece_info.is_major)
-            n_major_pieces_[piece_info.side]++;
+    if(piece_info.bIsBig) {
+        n_big_pieces_[piece_info.Side]++;
+        if(piece_info.bIsMajor)
+            n_major_pieces_[piece_info.Side]++;
         else
-            n_minor_pieces_[piece_info.side]++;
+            n_minor_pieces_[piece_info.Side]++;
     } else {
-        pawns_[piece_info.side].SetSquare(ESquare::Sq64(sq));
+        pawns_[piece_info.Side].SetSquare(ESquare::Sq64(sq));
         pawns_[ESide::both].SetSquare(ESquare::Sq64(sq));
     }
-    material_score_[piece_info.side] += piece_info.value;
+    material_score_[piece_info.Side] += piece_info.Value;
     piece_locations_[piece].Add(sq);
 }
 
@@ -541,10 +541,10 @@ void UBoard::MovePiece(const uint32 from, const uint32 to)
     HASH_PIECE(piece, to);
     b_[to] = piece;
 
-    if(piece_info.is_pawn) {
-        pawns_[piece_info.side].ClearSquare(ESquare::Sq64(from));
+    if(piece_info.bIsPawn) {
+        pawns_[piece_info.Side].ClearSquare(ESquare::Sq64(from));
         pawns_[ESide::both].ClearSquare(ESquare::Sq64(from));
-        pawns_[piece_info.side].SetSquare(ESquare::Sq64(to));
+        pawns_[piece_info.Side].SetSquare(ESquare::Sq64(to));
         pawns_[ESide::both].SetSquare(ESquare::Sq64(to));
     }
 
@@ -566,16 +566,16 @@ void UBoard::ClearPiece(const uint32 sq)
 
     HASH_PIECE(piece, sq);
     b_[sq] = EPieceType::empty;
-    material_score_[piece_info.side] -= piece_info.value;
+    material_score_[piece_info.Side] -= piece_info.Value;
 
-    if(piece_info.is_big) {
-        n_big_pieces_[piece_info.side]--;
-        if(piece_info.is_major)
-            n_major_pieces_[piece_info.side]--;
+    if(piece_info.bIsBig) {
+        n_big_pieces_[piece_info.Side]--;
+        if(piece_info.bIsMajor)
+            n_major_pieces_[piece_info.Side]--;
         else
-            n_minor_pieces_[piece_info.side]--;
+            n_minor_pieces_[piece_info.Side]--;
     } else {
-        pawns_[piece_info.side].ClearSquare(ESquare::Sq64(sq));
+        pawns_[piece_info.Side].ClearSquare(ESquare::Sq64(sq));
         pawns_[ESide::both].ClearSquare(ESquare::Sq64(sq));
     }
 
@@ -628,7 +628,7 @@ bool UBoard::IsOk() const
         const auto piece_info = piece_infos[piece];
         piece_count[piece]++;
 
-        const auto side = piece_info.side;
+        const auto side = piece_info.Side;
         if(piece_info.is_big) {
             n_big_pieces[side]++;
             if(piece_info.is_major)

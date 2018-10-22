@@ -105,11 +105,11 @@ FString FMove::ToString() const
 	auto str = ESquare::AsString(From()) + ESquare::AsString(To());
 	if (IsPromoted()) {
 		const auto piece_info = piece_infos[PromotedPiece()];
-		if (piece_info.is_knight)
+		if (piece_info.bIsKnight)
 			str += 'n';
-		else if (piece_info.is_rook_queen && !piece_info.is_bishop_queen)
+		else if (piece_info.bIsRookOrQueen && !piece_info.bIsBishopOrQueen)
 			str += 'r';
-		else if (!piece_info.is_rook_queen && piece_info.is_bishop_queen)
+		else if (!piece_info.bIsRookOrQueen && piece_info.bIsBishopOrQueen)
 			str += 'b';
 		else
 			str += 'q';

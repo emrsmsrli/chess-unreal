@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreTypes.h"
+#include "ObjectMacros.h"
 #include "Containers/Array.h"
 
 enum EPieceType
@@ -10,34 +11,34 @@ enum EPieceType
     empty, wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk
 };
 
-struct CHESS_API TPieceInfo
+struct CHESS_API FPieceInfo
 {
-    bool is_big;
-    bool is_major;
-    bool is_minor;
-    uint32 value;
-    uint8 side;
+    bool bIsBig;
+    bool bIsMajor;
+    bool bIsMinor;
+    int32 Value;
+    int32 Side;
 
-    bool is_pawn;
-    bool is_knight;
-    bool is_king;
-    bool is_rook_queen;
-    bool is_bishop_queen;
-    bool is_sliding;
+    bool bIsPawn;
+    bool bIsKnight;
+    bool bIsKing;
+    bool bIsRookOrQueen;
+    bool bIsBishopOrQueen;
+    bool bIsSliding;
 
-    TArray<int32> move_directions;
+    TArray<int32> MoveDirections;
 
-    TPieceInfo(const uint32 v, const uint8 s, const bool ikn,
+    FPieceInfo(const int32 v, const int32 s, const bool ikn,
            const bool ikg, const bool irq, const bool ibq, TArray<int32>&& mdirs)
-        : value(v), side(s), is_knight(ikn), is_king(ikg),
-          is_rook_queen(irq), is_bishop_queen(ibq), move_directions(MoveTemp(mdirs))
+        : Value(v), Side(s), bIsKnight(ikn), bIsKing(ikg),
+          bIsRookOrQueen(irq), bIsBishopOrQueen(ibq), MoveDirections(MoveTemp(mdirs))
     {
-        is_pawn = value && !is_rook_queen && !is_knight && !is_bishop_queen && !is_king;
-        is_big = !is_pawn;
-        is_major = is_rook_queen || is_king;
-        is_minor = is_knight || is_bishop_queen && !is_rook_queen;
-        is_sliding = !is_pawn && !is_knight && !is_king;
+        bIsPawn = Value && !bIsRookOrQueen && !bIsKnight && !bIsBishopOrQueen && !bIsKing;
+        bIsBig = !bIsPawn;
+        bIsMajor = bIsRookOrQueen || bIsKing;
+        bIsMinor = bIsKnight || bIsBishopOrQueen && !bIsRookOrQueen;
+        bIsSliding = !bIsPawn && !bIsKnight && !bIsKing;
     }
 };
 
-extern const TPieceInfo piece_infos[];
+extern const FPieceInfo piece_infos[];

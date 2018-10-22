@@ -44,13 +44,13 @@ TArray<FMove> UMoveGenerator::GenerateMoves(const uint32 sq) const
     const auto piece_info = piece_infos[piece];
 
     TArray<FMove> moves;
-    if(piece_info.is_pawn) {
+    if(piece_info.bIsPawn) {
         GeneratePawnMoves(sq, moves);
-    } else if(piece_info.is_sliding) {
+    } else if(piece_info.bIsSliding) {
         GenerateSlidingMoves(sq, moves);
     } else {
         GenerateNonSlidingMoves(sq, moves);
-        if(piece_info.is_king)
+        if(piece_info.bIsKing)
             GenerateCastlingMoves(moves);
     }
 
@@ -85,9 +85,9 @@ void UMoveGenerator::GeneratePawnMoves(const uint32 sq, TArray<FMove>& moves) co
             AddQuietMove(FMove::Create(sq, sq - 20, empty, empty, FMove::flag_pawn_start), moves);
     }
 
-    if(Verification::IsSquareOnBoard(sq + 9 * d) && piece_infos[CEngine->board_->b_[sq + 9 * d]].side == other_side)
+    if(Verification::IsSquareOnBoard(sq + 9 * d) && piece_infos[CEngine->board_->b_[sq + 9 * d]].Side == other_side)
         AddPawnCaptureMove(sq, sq + 9 * d, CEngine->board_->b_[sq + 9 * d], moves);
-    if(Verification::IsSquareOnBoard(sq + 11 * d) && piece_infos[CEngine->board_->b_[sq + 11 * d]].side == other_side)
+    if(Verification::IsSquareOnBoard(sq + 11 * d) && piece_infos[CEngine->board_->b_[sq + 11 * d]].Side == other_side)
         AddPawnCaptureMove(sq, sq + 11 * d, CEngine->board_->b_[sq + 11 * d], moves);
 
     if(CEngine->board_->en_passant_sq_ != ESquare::no_sq) {
@@ -103,12 +103,12 @@ void UMoveGenerator::GenerateSlidingMoves(const uint32 sq, TArray<FMove>& moves)
     const auto piece = CEngine->board_->b_[sq];
     const auto other_side = CEngine->board_->side_ ^ 1;
 
-    for(auto dir : piece_infos[piece].move_directions) {
+    for(auto dir : piece_infos[piece].MoveDirections) {
         auto sqq = sq + dir;
 
         while(Verification::IsSquareOnBoard(sqq)) {
             if(CEngine->board_->b_[sqq] != empty) {
-                if(piece_infos[CEngine->board_->b_[sqq]].side == other_side)
+                if(piece_infos[CEngine->board_->b_[sqq]].Side == other_side)
                     AddCaptureMove(FMove::Create(sq, sqq, CEngine->board_->b_[sqq], empty, 0), moves);
                 break;
             }
@@ -122,14 +122,14 @@ void UMoveGenerator::GenerateNonSlidingMoves(const uint32 sq, TArray<FMove>& mov
 {
     const auto piece = CEngine->board_->b_[sq];
     const auto other_side = CEngine->board_->side_ ^ 1;
-    for(auto dir : piece_infos[piece].move_directions) {
+    for(auto dir : piece_infos[piece].MoveDirections) {
         const auto sqq = sq + dir;
 
         if(!Verification::IsSquareOnBoard(sqq))
             continue;
 
         if(CEngine->board_->b_[sqq] != empty) {
-            if(piece_infos[CEngine->board_->b_[sqq]].side == other_side)
+            if(piece_infos[CEngine->board_->b_[sqq]].Side == other_side)
                 AddCaptureMove(FMove::Create(sq, sqq, CEngine->board_->b_[sqq], empty, 0), moves);
             continue;
         }
