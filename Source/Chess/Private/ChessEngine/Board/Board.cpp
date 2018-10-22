@@ -261,8 +261,8 @@ bool UBoard::MakeMove(const FMove& m)
 {
     MAKE_SURE(IsOk());
 
-    const auto from = m.from();
-    const auto to = m.to();
+    const auto from = m.From();
+    const auto to = m.To();
     const auto side = side_;
 
     MAKE_SURE(Verification::IsSquareOnBoard(from));
@@ -273,13 +273,13 @@ bool UBoard::MakeMove(const FMove& m)
     auto u = FUndo(m);
     u.pos_key = pos_key_;
 
-    if(m.is_enpassant()) {
+    if(m.IsEnPassant()) {
         if(side == ESide::white) {
             ClearPiece(to - 10);
         } else {
             ClearPiece(to + 10);
         }
-    } else if(m.is_castling()) {
+    } else if(m.IsCastling()) {
         switch(to) {
             case ESquare::c1:
                 MovePiece(ESquare::a1, ESquare::d1);
@@ -314,7 +314,7 @@ bool UBoard::MakeMove(const FMove& m)
 
     fifty_move_counter_++;
 
-    const auto captured = m.captured_piece();
+    const auto captured = m.CapturedPiece();
     if(captured != EPieceType::empty) {
         MAKE_SURE(Verification::IsPieceValid(captured));
         ClearPiece(to);
@@ -326,7 +326,7 @@ bool UBoard::MakeMove(const FMove& m)
 
     if(piece_infos[b_[from]].is_pawn) {
         fifty_move_counter_ = 0;
-        if(m.is_pawnstart()) {
+        if(m.IsPawnStart()) {
             if(side == ESide::white) {
                 en_passant_sq_ = from + 10;
                 MAKE_SURE(ESquare::Rank(en_passant_sq_) == ERank::rank_3);
@@ -340,7 +340,7 @@ bool UBoard::MakeMove(const FMove& m)
 
     MovePiece(from, to);
 
-    const auto promoted = m.promoted_piece();
+    const auto promoted = m.PromotedPiece();
     if(promoted != EPieceType::empty) {
         MAKE_SURE(Verification::IsPieceValid(promoted) && !piece_infos[promoted].is_pawn);
         ClearPiece(to);
@@ -371,8 +371,8 @@ void UBoard::TakeMove()
     auto h = history_.Pop();
     ply_--;
 
-    const auto from = h.move.from();
-    const auto to = h.move.to();
+    const auto from = h.move.From();
+    const auto to = h.move.To();
     MAKE_SURE(Verification::IsSquareOnBoard(from));
     MAKE_SURE(Verification::IsSquareOnBoard(to));
 
@@ -391,13 +391,13 @@ void UBoard::TakeMove()
     side_ ^= 1;
     HASH_SIDE();
 
-    if(h.move.is_enpassant()) {
+    if(h.move.IsEnPassant()) {
         if(side_ == ESide::white) {
             AddPiece(to - 10, EPieceType::bp);
         } else {
             AddPiece(to + 10, EPieceType::wp);
         }
-    } else if(h.move.is_castling()) {
+    } else if(h.move.IsCastling()) {
         switch(to) {
             case ESquare::c1: MovePiece(ESquare::d1, ESquare::a1);
                 break;
@@ -418,14 +418,14 @@ void UBoard::TakeMove()
         king_sq_[side_] = from;
     }
 
-    const auto captured = h.move.captured_piece();
+    const auto captured = h.move.CapturedPiece();
     if(captured != EPieceType::empty) {
         MAKE_SURE(Verification::IsPieceValid(captured));
         AddPiece(to, captured);
     }
 
-    const auto promoted = h.move.promoted_piece();
-    if(h.move.is_promoted()) {
+    const auto promoted = h.move.PromotedPiece();
+    if(h.move.IsPromoted()) {
         MAKE_SURE(Verification::IsPieceValid(promoted) && !piece_infos[promoted].is_pawn);
         ClearPiece(from);
         AddPiece(from, piece_infos[promoted].side == ESide::white ? EPieceType::wp : EPieceType::bp);

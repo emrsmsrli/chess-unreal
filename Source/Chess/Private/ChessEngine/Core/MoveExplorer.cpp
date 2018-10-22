@@ -247,7 +247,7 @@ int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth) c
 
     moves.Sort([](const FMove& lhs, const FMove& rhs) -> bool
     {
-        return lhs.score() > rhs.score();
+        return lhs.GetScore() > rhs.GetScore();
     });
 
     for(auto& move : moves) {
@@ -264,7 +264,7 @@ int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth) c
                     CEngine->SearchInfo->F_H_F++;
                 CEngine->SearchInfo->F_H++;
 
-                if(!move.is_captured())
+                if(!move.IsCaptured())
                     CEngine->SearchInfo->AddKiller(board->ply_, move);
 
                 return beta;
@@ -272,8 +272,8 @@ int32 UEvaluator::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth) c
             alpha = score;
             best_move = move;
 
-            if(!move.is_captured()) {
-                CEngine->SearchInfo->AddHistory(board->b_[best_move.from()], best_move.to(), depth);
+            if(!move.IsCaptured()) {
+                CEngine->SearchInfo->AddHistory(board->b_[best_move.From()], best_move.To(), depth);
             }
         }
     }

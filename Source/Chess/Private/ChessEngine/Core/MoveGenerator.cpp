@@ -79,9 +79,9 @@ void UMoveGenerator::GeneratePawnMoves(const uint32 sq, TArray<FMove>& moves) co
     if(CEngine->board_->b_[sq + 10 * d] == empty) {
         AddPawnRegularMove(sq, sq + 10 * d, moves);
         if(ESquare::Rank(sq) == ERank::rank_2 && CEngine->board_->b_[sq + 20] == empty)
-            AddQuietMove(FMove::create(sq, sq + 20, empty, empty, FMove::flag_pawn_start), moves);
+            AddQuietMove(FMove::Create(sq, sq + 20, empty, empty, FMove::flag_pawn_start), moves);
         else if(ESquare::Rank(sq) == ERank::rank_7 && CEngine->board_->b_[sq - 20] == empty)
-            AddQuietMove(FMove::create(sq, sq - 20, empty, empty, FMove::flag_pawn_start), moves);
+            AddQuietMove(FMove::Create(sq, sq - 20, empty, empty, FMove::flag_pawn_start), moves);
     }
 
     if(Verification::IsSquareOnBoard(sq + 9 * d) && piece_infos[CEngine->board_->b_[sq + 9 * d]].side == other_side)
@@ -91,9 +91,9 @@ void UMoveGenerator::GeneratePawnMoves(const uint32 sq, TArray<FMove>& moves) co
 
     if(CEngine->board_->en_passant_sq_ != ESquare::no_sq) {
         if(sq + 9 * d == CEngine->board_->en_passant_sq_)
-            AddEnPassantMove(FMove::create(sq, sq + 9 * d, empty, empty, FMove::flag_en_passant), moves);
+            AddEnPassantMove(FMove::Create(sq, sq + 9 * d, empty, empty, FMove::flag_en_passant), moves);
         else if(sq + 11 * d == CEngine->board_->en_passant_sq_)
-            AddEnPassantMove(FMove::create(sq, sq + 11 * d, empty, empty, FMove::flag_en_passant), moves);
+            AddEnPassantMove(FMove::Create(sq, sq + 11 * d, empty, empty, FMove::flag_en_passant), moves);
     }
 }
 
@@ -108,10 +108,10 @@ void UMoveGenerator::GenerateSlidingMoves(const uint32 sq, TArray<FMove>& moves)
         while(Verification::IsSquareOnBoard(sqq)) {
             if(CEngine->board_->b_[sqq] != empty) {
                 if(piece_infos[CEngine->board_->b_[sqq]].side == other_side)
-                    AddCaptureMove(FMove::create(sq, sqq, CEngine->board_->b_[sqq], empty, 0), moves);
+                    AddCaptureMove(FMove::Create(sq, sqq, CEngine->board_->b_[sqq], empty, 0), moves);
                 break;
             }
-            AddQuietMove(FMove::create(sq, sqq, empty, empty, 0), moves);
+            AddQuietMove(FMove::Create(sq, sqq, empty, empty, 0), moves);
             sqq += dir;
         }
     }
@@ -129,10 +129,10 @@ void UMoveGenerator::GenerateNonSlidingMoves(const uint32 sq, TArray<FMove>& mov
 
         if(CEngine->board_->b_[sqq] != empty) {
             if(piece_infos[CEngine->board_->b_[sqq]].side == other_side)
-                AddCaptureMove(FMove::create(sq, sqq, CEngine->board_->b_[sqq], empty, 0), moves);
+                AddCaptureMove(FMove::Create(sq, sqq, CEngine->board_->b_[sqq], empty, 0), moves);
             continue;
         }
-        AddQuietMove(FMove::create(sq, sqq, empty, empty, 0), moves);
+        AddQuietMove(FMove::Create(sq, sqq, empty, empty, 0), moves);
     }
 }
 
@@ -144,7 +144,7 @@ void UMoveGenerator::GenerateCastlingMoves(TArray<FMove>& moves) const
                 if(!CEngine->board_->IsAttacked(ESquare::e1, ESide::black) && !CEngine
                                                                                ->board_->IsAttacked(
                                                                                    ESquare::f1, ESide::black)) {
-                    AddQuietMove(FMove::create(ESquare::e1, ESquare::g1, empty, empty,
+                    AddQuietMove(FMove::Create(ESquare::e1, ESquare::g1, empty, empty,
                                                FMove::flag_castling), moves);
                 }
             }
@@ -157,7 +157,7 @@ void UMoveGenerator::GenerateCastlingMoves(TArray<FMove>& moves) const
                 if(!CEngine->board_->IsAttacked(ESquare::e1, ESide::black) && !CEngine
                                                                                ->board_->IsAttacked(
                                                                                    ESquare::d1, ESide::black)) {
-                    AddQuietMove(FMove::create(ESquare::e1, ESquare::c1, empty, empty,
+                    AddQuietMove(FMove::Create(ESquare::e1, ESquare::c1, empty, empty,
                                                FMove::flag_castling), moves);
                 }
             }
@@ -169,7 +169,7 @@ void UMoveGenerator::GenerateCastlingMoves(TArray<FMove>& moves) const
                 if(!CEngine->board_->IsAttacked(ESquare::e8, ESide::white) && !CEngine
                                                                                ->board_->IsAttacked(
                                                                                    ESquare::f8, ESide::white)) {
-                    AddQuietMove(FMove::create(ESquare::e8, ESquare::g8, empty, empty,
+                    AddQuietMove(FMove::Create(ESquare::e8, ESquare::g8, empty, empty,
                                                FMove::flag_castling), moves);
                 }
             }
@@ -182,7 +182,7 @@ void UMoveGenerator::GenerateCastlingMoves(TArray<FMove>& moves) const
                 if(!CEngine->board_->IsAttacked(ESquare::e8, ESide::white) && !CEngine
                                                                                ->board_->IsAttacked(
                                                                                    ESquare::d8, ESide::white)) {
-                    AddQuietMove(FMove::create(ESquare::e8, ESquare::c8, empty, empty,
+                    AddQuietMove(FMove::Create(ESquare::e8, ESquare::c8, empty, empty,
                                                FMove::flag_castling), moves);
                 }
             }
@@ -194,12 +194,12 @@ void UMoveGenerator::AddQuietMove(FMove move, TArray<FMove>& moves) const
 {
     if(CEngine->bIsMultiplayer) {
         if(CEngine->SearchInfo->GetKiller(0, CEngine->board_->ply_) == move) {
-            move.set_score(900000);
+            move.SetScore(900000);
         } else if(CEngine->SearchInfo->GetKiller(1, CEngine->board_->ply_) == move) {
-            move.set_score(800000);
+            move.SetScore(800000);
         } else {
-            const auto score = CEngine->SearchInfo->GetHistory(CEngine->board_->b_[move.from()], move.to());
-            move.set_score(score);
+            const auto score = CEngine->SearchInfo->GetHistory(CEngine->board_->b_[move.From()], move.To());
+            move.SetScore(score);
         }
     }
     moves.Add(move);
@@ -208,14 +208,14 @@ void UMoveGenerator::AddQuietMove(FMove move, TArray<FMove>& moves) const
 void UMoveGenerator::AddCaptureMove(FMove move, TArray<FMove>& moves) const
 {
     if(CEngine->bIsMultiplayer)
-        move.set_score(mvv_lva_scores[move.captured_piece()][CEngine->board_->b_[move.from()]] + 1000000);
+        move.SetScore(mvv_lva_scores[move.CapturedPiece()][CEngine->board_->b_[move.From()]] + 1000000);
     moves.Add(move);
 }
 
 void UMoveGenerator::AddEnPassantMove(FMove move, TArray<FMove>& moves) const
 {
     if(CEngine->bIsMultiplayer)
-        move.set_score(105 + 1000000);
+        move.SetScore(105 + 1000000);
     moves.Add(move);
 }
 
@@ -226,12 +226,12 @@ void UMoveGenerator::AddPawnRegularMove(const uint32 from, const uint32 to, TArr
 
     if(CEngine->board_->side_ == ESide::white && ESquare::Rank(from) == ERank::rank_7) {
         for(uint32 promoted : {wq, wr, wb, wn})
-            AddQuietMove(FMove::create(from, to, empty, promoted, 0), moves);
+            AddQuietMove(FMove::Create(from, to, empty, promoted, 0), moves);
     } else if(CEngine->board_->side_ == ESide::black && ESquare::Rank(from) == ERank::rank_2) {
         for(uint32 promoted : {bq, br, bb, bn})
-            AddQuietMove(FMove::create(from, to, empty, promoted, 0), moves);
+            AddQuietMove(FMove::Create(from, to, empty, promoted, 0), moves);
     } else {
-        AddQuietMove(FMove::create(from, to, empty, empty, 0), moves);
+        AddQuietMove(FMove::Create(from, to, empty, empty, 0), moves);
     }
 }
 
@@ -244,11 +244,11 @@ void UMoveGenerator::AddPawnCaptureMove(const uint32 from, const uint32 to,
 
     if(CEngine->board_->side_ == ESide::white && ESquare::Rank(from) == ERank::rank_7) {
         for(uint32 promoted : {wq, wr, wb, wn})
-            AddCaptureMove(FMove::create(from, to, captured, promoted, 0), moves);
+            AddCaptureMove(FMove::Create(from, to, captured, promoted, 0), moves);
     } else if(CEngine->board_->side_ == ESide::black && ESquare::Rank(from) == ERank::rank_2) {
         for(uint32 promoted : {bq, br, bb, bn})
-            AddCaptureMove(FMove::create(from, to, captured, promoted, 0), moves);
+            AddCaptureMove(FMove::Create(from, to, captured, promoted, 0), moves);
     } else {
-        AddCaptureMove(FMove::create(from, to, captured, empty, 0), moves);
+        AddCaptureMove(FMove::Create(from, to, captured, empty, 0), moves);
     }
 }

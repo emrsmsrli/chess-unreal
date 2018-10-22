@@ -23,22 +23,22 @@ private:
 public:
     FMove() : FMove(0) {}
 
-    uint32 from() const;
-    uint32 to() const;
+    uint32 From() const;
+    uint32 To() const;
 
-    uint32 captured_piece() const;
-    uint32 promoted_piece() const;
+    uint32 CapturedPiece() const;
+    uint32 PromotedPiece() const;
 
-    bool is_captured() const;
-    bool is_promoted() const;
-    bool is_enpassant() const;
-    bool is_pawnstart() const;
-    bool is_castling() const;
+    bool IsCaptured() const;
+    bool IsPromoted() const;
+    bool IsEnPassant() const;
+    bool IsPawnStart() const;
+    bool IsCastling() const;
 
-    void set_score(uint32 s);
-    uint32 score() const;
+    void SetScore(uint32 s);
+    uint32 GetScore() const;
 
-    static FMove create(uint32 from, uint32 to, uint32 captured, uint32 promoted, uint32 flags);
+    static FMove Create(uint32 from, uint32 to, uint32 captured, uint32 promoted, uint32 flags);
 
     FString ToString() const;
     bool operator==(const FMove& o) const;
