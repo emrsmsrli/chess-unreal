@@ -4,17 +4,18 @@
 
 #include "Object.h"
 #include "Debug.h"
+#include "Search.h"
 #include "ChessEngine.generated.h"
 
 class UPrincipleVariationTable;
 class UMoveGenerator;
 class UMoveExplorer;
+class FMoveExplorerThread;
 class FMove;
 class UBoard;
 struct FSearchInfo;
-struct FSearchParams;
 
-DECLARE_DELEGATE_OneParam(DMoveFoundDelegate, FMove)
+DECLARE_DELEGATE_OneParam(FMoveFoundDelegate, FMove)
 
 UCLASS()
 class CHESS_API UChessEngine : public UObject
@@ -27,14 +28,15 @@ class CHESS_API UChessEngine : public UObject
 
     UBoard* board_;
     UMoveGenerator* move_generator_;
-    UMoveExplorer* evaluator_;
+    UMoveExplorer* move_explorer_;
+    FMoveExplorerThread* move_explorer_thread_;
     UPrincipleVariationTable* pv_table_;
 
 public:
     bool bIsMultiplayer = true;
     FSearchInfo* SearchInfo;
-    FSearchParams* SearchParams;
-    DMoveFoundDelegate MoveFoundDelegate;
+    FSearchParams SearchParams;
+    FMoveFoundDelegate MoveFoundDelegate;
 
     UChessEngine();
     void Set(FString& fen) const;

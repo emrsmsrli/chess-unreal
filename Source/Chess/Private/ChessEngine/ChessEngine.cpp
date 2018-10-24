@@ -24,10 +24,10 @@ UChessEngine::UChessEngine()
 
     board_ = NewObject<UBoard>();   
     move_generator_ = NewObject<UMoveGenerator>();
-    evaluator_ = NewObject<UMoveExplorer>();
+    move_explorer_ = NewObject<UMoveExplorer>();
     pv_table_ = NewObject<UPrincipleVariationTable>();
+    move_explorer_thread_ = new FMoveExplorerThread();
     SearchInfo = new FSearchInfo();
-    SearchParams = new FSearchParams();
 }
 
 void UChessEngine::Set(FString& fen) const
@@ -37,7 +37,7 @@ void UChessEngine::Set(FString& fen) const
 
 void UChessEngine::Search() const
 {
-    evaluator_->Search();
+    move_explorer_->Search();
 }
 
 #ifdef DEBUG

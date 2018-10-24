@@ -78,62 +78,6 @@ namespace
     };
 }
 
-class FMoveSearchThread : FRunnable
-{
-    UMoveExplorer* ref_;
-    FRunnableThread* thread_;
-    FThreadSafeBool is_killing_;
-    FThreadSafeBool is_giving_up_search_;
-
-    FEvent* event_;
-
-public:
-    FMoveSearchThread()
-    {
-        thread_ = FRunnableThread::Create(this, TEXT("SearchThread"));
-        event_ = FGenericPlatformProcess::GetSynchEventFromPool(false);
-        check(thread_);
-        check(event_);
-    }
-
-    uint32 Run() override
-    {
-		// initial wait so that engine does not do wild
-		// and start searchiıng before game start
-        event_->Wait();
-		
-        while(!is_killing_) {
-            if(!is_giving_up_search_) {
-                FPlatformProcess::Sleep(0.1);
-                // todo
-            } else {
-                event_->Wait();
-
-                if(is_killing_)
-                    break;
-            }
-        }
-
-        return 0;
-    }
-
-    void Stop() override
-    {
-        is_killing_ = true;
-        start_search(); // breaks out of the loop
-    }
-
-    void start_search()
-    {
-        is_giving_up_search_ = false;
-        event_->Trigger();
-    }
-
-    void give_up_search() { is_giving_up_search_ = true; }
-};
-
-//auto* search_thread = new FMoveSearchThread();
-
 void UMoveExplorer::Search() const
 {
     CEngine->SearchInfo->Clear();
@@ -365,4 +309,52 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
         CEngine->pv_table_->AddMove(best_move, CEngine->board_->pos_key_);
 
     return alpha;
+}
+
+FMoveExplorerThread::FMoveExplorerThread()
+{
+    thread_ = FRunnableThread::Create(this, TEXT("SearchThread"));
+    event_ = FGenericPlatformProcess::GetSynchEventFromPool(false);
+    check(thread_);
+    check(event_);
+}
+
+uint32 FMoveExplorerThread::Run()
+{
+    // initial wait so that engine does not do wild
+    // and start searchiıng before game start
+    event_->Wait();
+
+    while(!is_killing_) {
+        if(!is_giving_up_search_) {
+            FPlatformProcess::Sleep(0.1);
+
+
+            // todo
+        } else {
+            event_->Wait();
+
+            if(is_killing_)
+                break;
+        }
+    }
+
+    return 0;
+}
+
+void FMoveExplorerThread::Stop()
+{
+    is_killing_ = true;
+    StartSearch(); // breaks out of the loop
+}
+
+void FMoveExplorerThread::StartSearch()
+{
+    is_giving_up_search_ = false;
+    event_->Trigger();
+}
+
+void FMoveExplorerThread::GiveUpSearch()
+{
+    is_giving_up_search_ = true;
 }
