@@ -98,6 +98,10 @@ public:
 
     uint32 Run() override
     {
+		// initial wait so that engine does not do wild
+		// and start searchiıng before game start
+        event_->Wait();
+		
         while(!is_killing_) {
             if(!is_giving_up_search_) {
                 FPlatformProcess::Sleep(0.1);
@@ -230,10 +234,10 @@ int32 UMoveExplorer::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth
 {
     auto* board = CEngine->board_;
 
-    CEngine->SearchInfo->TotalVisitedNodes++;
-
     if(depth == 0)
         return Quiescence(alpha, beta);
+
+    CEngine->SearchInfo->TotalVisitedNodes++;
 
     if(board->fifty_move_counter_ >= 100 || board->HasRepetition())
         return 0; // draw
@@ -283,9 +287,8 @@ int32 UMoveExplorer::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth
             alpha = score;
             best_move = move;
 
-            if(!move.IsCaptured()) {
+            if(!move.IsCaptured())
                 CEngine->SearchInfo->AddHistory(board->b_[best_move.From()], best_move.To(), depth);
-            }
         }
     }
 
@@ -305,6 +308,8 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
 {
     auto* board = CEngine->board_;
     MAKE_SURE(board->IsOk())
+
+    CEngine->SearchInfo->TotalVisitedNodes++;
 
     if(board->fifty_move_counter_ >= 100 || board->HasRepetition())
         return 0; // draw
