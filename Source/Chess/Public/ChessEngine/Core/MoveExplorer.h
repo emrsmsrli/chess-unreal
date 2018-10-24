@@ -3,11 +3,12 @@
 #pragma once
 
 #include "Object.h"
-#include "MoveExplorer.generated.h"
 #include "Runnable.h"
 #include "ThreadSafeBool.h"
+#include "MoveExplorer.generated.h"
 
 class UMoveGenerator;
+class FMove;
 
 UCLASS()
 class CHESS_API UMoveExplorer : public UObject
@@ -17,7 +18,7 @@ class CHESS_API UMoveExplorer : public UObject
     friend UMoveGenerator;
     
 public:
-    void Search() const;
+    FMove Search() const;
 
 private:
     int32 Evaluate() const;
@@ -29,16 +30,18 @@ class FMoveExplorerThread : FRunnable
 {
     FRunnableThread* thread_;
     FThreadSafeBool is_killing_;
-    FThreadSafeBool is_giving_up_search_;
+    FThreadSafeBool is_stopping_search_;
 
     FEvent* event_;
 
 public:
     FMoveExplorerThread();
+    ~FMoveExplorerThread();
 
     uint32 Run() override;
     void Stop() override;
+	void EnsureCompletion();
 
     void StartSearch();
-    void GiveUpSearch();
+    void StopSearch();
 };

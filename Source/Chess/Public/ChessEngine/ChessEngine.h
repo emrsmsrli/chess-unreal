@@ -25,6 +25,7 @@ class CHESS_API UChessEngine : public UObject
     friend UPrincipleVariationTable;
     friend UMoveGenerator;
     friend UMoveExplorer;
+    friend FMoveExplorerThread;
 
     UBoard* board_;
     UMoveGenerator* move_generator_;
@@ -41,11 +42,15 @@ public:
     UChessEngine();
     void Set(FString& fen) const;
 
+    void MakeMove(FMove& move) const;
+    void TakeMove() const;
+    TArray<FMove> GenerateMoves(uint32 sq) const;
     void Search() const;
     // void SaveGame();
     // void LoadGame();
 
     static void Initialize();
+    static void Shutdown();
 
 #ifdef DEBUG
     FString Perft(int32 depth) const;

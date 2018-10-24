@@ -15,6 +15,14 @@ void UChessEngine::Initialize()
     CEngine = NewObject<UChessEngine>();
 }
 
+void UChessEngine::Shutdown()
+{
+    CEngine->move_explorer_thread_->EnsureCompletion();
+    delete CEngine->move_explorer_thread_;
+    delete CEngine->SearchInfo;
+    CEngine = nullptr;
+}
+
 UChessEngine::UChessEngine()
 {
     ESquare::Initialize();
@@ -35,9 +43,24 @@ void UChessEngine::Set(FString& fen) const
     board_->Set(fen);
 }
 
+void UChessEngine::MakeMove(FMove& move) const
+{
+    board_->MakeMove(move);
+}
+
+void UChessEngine::TakeMove() const
+{
+    board_->TakeMove();
+}
+
+TArray<FMove> UChessEngine::GenerateMoves(const uint32 sq) const
+{
+    return move_generator_->GenerateMoves(sq);
+}
+
 void UChessEngine::Search() const
 {
-    move_explorer_->Search();
+    move_explorer_thread_->StartSearch();
 }
 
 #ifdef DEBUG

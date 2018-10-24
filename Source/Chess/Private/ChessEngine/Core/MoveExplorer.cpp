@@ -8,12 +8,15 @@
 #include "PieceInfo.h"
 #include "Search.h"
 #include "PrincipleVariation.h"
-#include "Runnable.h"
 #include "RunnableThread.h"
 #include "ThreadSafeBool.h"
 #include "Event.h"
 #include "ChessEngine.h"
+#include "Async.h"
+
+#ifdef DEBUG
 #include "Verify.h"
+#endif
 
 #define INFINITE 30000
 #define MATE 29000
@@ -78,31 +81,24 @@ namespace
     };
 }
 
-void UMoveExplorer::Search() const
+FMove UMoveExplorer::Search() const
 {
     CEngine->SearchInfo->Clear();
     CEngine->pv_table_->Clear();
     CEngine->board_->ply_ = 0;
 
-    //search_thread->start_search();
-
-    /*best_move_ = Async<TMove>(EAsyncExecution::ThreadPool, [&]() -> TMove
-    {
-        return TMove::no_move;
-    }, [&]()
-    {
-        callback(best_move_.Get());
-    });*/
+    auto best_move = FMove::no_move;
 
     //~ iterative deepening
-    for(auto depth = 1; depth <= CEngine->SearchParams->Depth; ++depth) {
+    for(auto depth = 1; depth <= CEngine->SearchParams.Depth; ++depth) {
         const auto best_score = AlphaBeta(-INFINITE, INFINITE, depth);
 
         // out of time check
 
         const auto pvmoves = CEngine->pv_table_->GetLine(depth);
-        const auto best_move = pvmoves[0];
+        best_move = pvmoves[0];
 
+#ifdef DEBUG
         UE_LOG(LogTemp, Log, TEXT("depth %d, score %d, move: %s, nodes %ld"), depth,
             best_score, *best_move.ToString(), CEngine->SearchInfo->TotalVisitedNodes);
 
@@ -112,9 +108,12 @@ void UMoveExplorer::Search() const
         }
 
         UE_LOG(LogTemp, Log, TEXT("%s"), *str);
-        UE_LOG(LogTemp, Log, TEXT("Ordering %.2f"), CEngine->SearchInfo->F_H == 0 ? 0 : 
-			CEngine->SearchInfo->F_H_F / CEngine->SearchInfo->F_H);
+        UE_LOG(LogTemp, Log, TEXT("Ordering %.2f"), CEngine->SearchInfo->F_H == 0 ? 0 :
+            CEngine->SearchInfo->F_H_F / CEngine->SearchInfo->F_H);
+#endif
     }
+
+    return best_move;
 }
 
 int32 UMoveExplorer::Evaluate() const
@@ -267,7 +266,7 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
 
     if(stand_pat > alpha)
         alpha = stand_pat;
-    
+
     uint32 legal = 0;
     const auto old_alpha = alpha;
     auto best_move = FMove::no_move;
@@ -278,7 +277,7 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
     {
         return move.IsCaptured();
     });
-    
+
     moves.Sort([](const FMove& lhs, const FMove& rhs) -> bool
     {
         return lhs.GetScore() > rhs.GetScore();
@@ -313,24 +312,39 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
 
 FMoveExplorerThread::FMoveExplorerThread()
 {
-    thread_ = FRunnableThread::Create(this, TEXT("SearchThread"));
     event_ = FGenericPlatformProcess::GetSynchEventFromPool(false);
-    check(thread_);
     check(event_);
+    thread_ = FRunnableThread::Create(this, TEXT("SearchThread"));
+    check(thread_);
+}
+
+FMoveExplorerThread::~FMoveExplorerThread()
+{
+    if(event_) {
+        FGenericPlatformProcess::ReturnSynchEventToPool(event_);
+        event_ = nullptr;
+    }
+   
+    delete thread_;
 }
 
 uint32 FMoveExplorerThread::Run()
 {
-    // initial wait so that engine does not do wild
-    // and start searchiıng before game start
+    // initial wait so that engine does not go wild
+    // and start searching before game start
     event_->Wait();
 
     while(!is_killing_) {
-        if(!is_giving_up_search_) {
-            FPlatformProcess::Sleep(0.1);
+        if(!is_stopping_search_) {
+            FPlatformProcess::Sleep(0.01);
 
-
-            // todo
+            const auto best_move = CEngine->move_explorer_->Search();
+			AsyncTask(ENamedThreads::GameThread, [best_move]() -> void
+			{
+                // should be bound by the caller until this point
+                CEngine->MoveFoundDelegate.Execute(best_move);
+			});
+            StopSearch();
         } else {
             event_->Wait();
 
@@ -348,13 +362,19 @@ void FMoveExplorerThread::Stop()
     StartSearch(); // breaks out of the loop
 }
 
+void FMoveExplorerThread::EnsureCompletion()
+{
+    Stop();
+    thread_->WaitForCompletion();
+}
+
 void FMoveExplorerThread::StartSearch()
 {
-    is_giving_up_search_ = false;
+    is_stopping_search_ = false;
     event_->Trigger();
 }
 
-void FMoveExplorerThread::GiveUpSearch()
+void FMoveExplorerThread::StopSearch()
 {
-    is_giving_up_search_ = true;
+    is_stopping_search_ = true;
 }
