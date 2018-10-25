@@ -8,6 +8,7 @@
 #include "Undo.h"
 #include "Verify.h"
 #include "Side.h"
+#include "Util/Log.h"
 
 #define MAX_POSITION_MOVES 256
 
@@ -76,6 +77,7 @@ void UBoard::Reset()
 
 bool UBoard::Set(const FString& fen)
 {
+    LOGI("new fen: %s", *fen);
     Reset();
 
     auto f = *fen;
@@ -342,7 +344,7 @@ bool UBoard::MakeMove(const FMove& m)
 
     const auto promoted = m.PromotedPiece();
     if(promoted != EPieceType::empty) {
-        MAKE_SURE(Verification::IsPieceValid(promoted) && !piece_infos[promoted].is_pawn);
+        MAKE_SURE(Verification::IsPieceValid(promoted) && !piece_infos[promoted].bIsPawn);
         ClearPiece(to);
         AddPiece(to, promoted);
     }
@@ -426,7 +428,7 @@ void UBoard::TakeMove()
 
     const auto promoted = h.move.PromotedPiece();
     if(h.move.IsPromoted()) {
-        MAKE_SURE(Verification::IsPieceValid(promoted) && !piece_infos[promoted].is_pawn);
+        MAKE_SURE(Verification::IsPieceValid(promoted) && !piece_infos[promoted].bIsPawn);
         ClearPiece(from);
         AddPiece(from, piece_infos[promoted].Side == ESide::white ? EPieceType::wp : EPieceType::bp);
     }
@@ -629,15 +631,15 @@ bool UBoard::IsOk() const
         piece_count[piece]++;
 
         const auto side = piece_info.Side;
-        if(piece_info.is_big) {
+        if(piece_info.bIsBig) {
             n_big_pieces[side]++;
-            if(piece_info.is_major)
+            if(piece_info.bIsMajor)
                 n_major_pieces[side]++;
-            else if(piece_info.is_minor)
+            else if(piece_info.bIsMinor)
                 n_minor_pieces[side]++;
         }
 
-        material_score[side] += piece_info.value;
+        material_score[side] += piece_info.Value;
     }
 
     for(uint32 p = EPieceType::wp; p <= EPieceType::bk; ++p) {

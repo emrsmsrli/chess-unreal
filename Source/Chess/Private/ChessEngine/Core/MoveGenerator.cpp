@@ -7,6 +7,7 @@
 #include "Debug.h"
 #include "Search.h"
 #include "ChessEngine.h"
+#include "Util/Log.h"
 
 #define CAPTURE_SCORE 1000000
 #define FIRST_KILLER_SCORE 900000
@@ -26,6 +27,8 @@ void UMoveGenerator::Initialize()
     for(uint32 attacker = wp; attacker <= bk; attacker++)
         for(uint32 victim = wp; victim <= bk; victim++)
             mvv_lva_scores[victim][attacker] = victim_score[victim] + 6 - victim_score[attacker] / 100;
+    
+    LOGI("initialized");
 }
 
 TArray<FMove> UMoveGenerator::GenerateMoves() const

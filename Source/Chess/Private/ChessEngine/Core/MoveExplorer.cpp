@@ -13,6 +13,7 @@
 #include "Event.h"
 #include "ChessEngine.h"
 #include "Async.h"
+#include "Util/Log.h"
 
 #ifdef DEBUG
 #include "Verify.h"
@@ -83,6 +84,10 @@ namespace
 
 FMove UMoveExplorer::Search() const
 {
+    LOGI("beginning with depth: %d, time set: %d, null cut: %d", 
+		CEngine->SearchParams.Depth, 
+		CEngine->SearchParams.TimeSet, 
+		CEngine->SearchParams.UseNullCut);
     CEngine->SearchInfo->Clear();
     CEngine->pv_table_->Clear();
     CEngine->board_->ply_ = 0;
@@ -99,20 +104,22 @@ FMove UMoveExplorer::Search() const
         best_move = pvmoves[0];
 
 #ifdef DEBUG
-        UE_LOG(LogTemp, Log, TEXT("depth %d, score %d, move: %s, nodes %ld"), depth,
-            best_score, *best_move.ToString(), CEngine->SearchInfo->TotalVisitedNodes);
+        LOGI("depth %d, score %d, move: %s, nodes %ld",
+			depth, best_score, *best_move.ToString(), 
+			CEngine->SearchInfo->TotalVisitedNodes);
 
         FString str = "pv";
         for(auto& move : pvmoves) {
             str += " " + move.ToString();
         }
 
-        UE_LOG(LogTemp, Log, TEXT("%s"), *str);
-        UE_LOG(LogTemp, Log, TEXT("Ordering %.2f"), CEngine->SearchInfo->F_H == 0 ? 0 :
+        LOGI("%s", *str);
+        LOGI("Ordering %.2f", CEngine->SearchInfo->F_H == 0 ? 0 :
             CEngine->SearchInfo->F_H_F / CEngine->SearchInfo->F_H);
 #endif
     }
-
+    
+    LOGI("best move found: %s", *best_move.ToString());
     return best_move;
 }
 
@@ -250,7 +257,7 @@ int32 UMoveExplorer::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth
 int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
 {
     auto* board = CEngine->board_;
-    MAKE_SURE(board->IsOk())
+    MAKE_SURE(board->IsOk());
 
     CEngine->SearchInfo->TotalVisitedNodes++;
 
@@ -312,6 +319,7 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
 
 FMoveExplorerThread::FMoveExplorerThread()
 {
+    LOGI("thread starting");
     event_ = FGenericPlatformProcess::GetSynchEventFromPool(false);
     check(event_);
     thread_ = FRunnableThread::Create(this, TEXT("SearchThread"));
@@ -352,7 +360,8 @@ uint32 FMoveExplorerThread::Run()
                 break;
         }
     }
-
+    
+    LOGI("thread exiting");
     return 0;
 }
 

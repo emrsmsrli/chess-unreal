@@ -7,12 +7,15 @@
 #include "Square.h"
 #include "Debug.h"
 #include "Search.h"
+#include "Util/Log.h"
 
 UChessEngine* CEngine = nullptr;
 
 void UChessEngine::Initialize()
 {
+    LOGI("engine initialization starting");
     CEngine = NewObject<UChessEngine>();
+    LOGI("engine initialization complete");
 }
 
 void UChessEngine::Shutdown()

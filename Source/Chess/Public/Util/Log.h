@@ -1,9 +1,18 @@
 #pragma once
 
-#include "LogMacros.h"
+#include "Debug.h"
 
-#define LOGI(Msg) UE_LOG(LogChess, Log, \
-    TEXT("[%s] - %s"), __FUNCTION__, Msg)
+#ifdef DEBUG
+#include "Chess.h"
+#endif
 
-#define LOGW(Msg) UE_LOG(LogChess, Warning, \
-    TEXT("[%s] - %s"), __FUNCTION__, Msg)
+#ifdef DEBUG
+#define LOGI(f,...) UE_LOG(LogChess, Log, \
+    TEXT("[%s] - %s"), *FString(__FUNCTION__), *FString::Printf(TEXT(f), ##__VA_ARGS__))
+
+#define LOGW(f, ...) UE_LOG(LogChess, Warning, \
+    TEXT("[%s] - %s"), *FString(__FUNCTION__), *FString::Printf(TEXT(f), ##__VA_ARGS__)
+#else 
+#define LOGI(f, ...)
+#define LOGW(f, ...)
+#endif

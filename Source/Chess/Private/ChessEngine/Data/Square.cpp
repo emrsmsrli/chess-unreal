@@ -2,6 +2,7 @@
 
 #include "Square.h"
 #include "Consts.h"
+#include "Util/Log.h"
 
 namespace
 {
@@ -82,4 +83,6 @@ void ESquare::Initialize()
             sq64++;
         }
     }
+
+    LOGI("initialized");
 }

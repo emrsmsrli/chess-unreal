@@ -3,6 +3,7 @@
 #include "Bitboard.h"
 #include "Consts.h"
 #include "Square.h"
+#include "Util/Log.h"
 
 #ifdef DEBUG
 #include "CString.h"
@@ -90,4 +91,6 @@ void FBitboard::Initialize()
         set_mask[i] = 1ULL << i;
         clr_mask[i] = ~set_mask[i];
     }
+
+    LOGI("initialized");
 }

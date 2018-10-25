@@ -3,6 +3,7 @@
 #include "PosKey.h"
 #include "Consts.h"
 #include "Math/UnrealMathUtility.h"
+#include "Util/Log.h"
 
 #define RAND_64() 	((uint64)FMath::Rand() | \
 					(uint64)FMath::Rand() << 15 | \
@@ -21,12 +22,14 @@ void PosKey::Initialize()
 {
     for(auto& piece_key : piece_keys)
         for(auto& j : piece_key)
-            j =RAND_64();
+            j = RAND_64();
 
     side_key = RAND_64();
 
     for(auto& castle_key : castle_keys)
         castle_key = RAND_64();
+
+    LOGI("initialized");
 }
 
 uint64 PosKey::GetPieceKey(const uint32 piece_number, const uint32 square)
