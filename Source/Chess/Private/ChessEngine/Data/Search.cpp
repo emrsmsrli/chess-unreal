@@ -37,8 +37,10 @@ void FSearchInfo::Clear()
 
     TotalVisitedNodes = 0;
 
+#ifdef DEBUG
     F_H = 0;
     F_H_F = 0;
+#endif
 
     for(auto& i : History) {
         for(auto& j : i) {

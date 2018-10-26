@@ -241,9 +241,11 @@ int32 UMoveExplorer::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth
 
         if(score > alpha) {
             if(score >= beta) {
+#ifdef DEBUG
                 if(legal == 1)
                     CEngine->SearchInfo->F_H_F++;
                 CEngine->SearchInfo->F_H++;
+#endif
 
                 if(!move.IsCaptured())
                     CEngine->SearchInfo->AddKiller(board->ply_, move);
@@ -322,9 +324,11 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
 
         if(score > alpha) {
             if(score >= beta) {
+#ifdef DEBUG
                 if(legal == 1)
                     CEngine->SearchInfo->F_H_F++;
                 CEngine->SearchInfo->F_H++;
+#endif
 
                 return beta;
             }

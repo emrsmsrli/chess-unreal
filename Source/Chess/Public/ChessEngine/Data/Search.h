@@ -6,6 +6,7 @@
 #include "ObjectMacros.h"
 #include "Consts.h"
 #include "Move.h"
+#include "Debug.h"
 #include "Search.generated.h"
 
 USTRUCT(BlueprintType)
@@ -35,11 +36,13 @@ struct CHESS_API FSearchInfo
     bool bStopRequested = false;
 
     int64 TotalVisitedNodes = 0;
-    
+
+#ifdef DEBUG
     // fail high
     float F_H = 0;
     // fail high first
-    float F_H_F = 0; 
+    float F_H_F = 0;
+#endif
 
     // heuristics for better move ordering
     uint32 History[n_pieces][n_board_squares]{};
