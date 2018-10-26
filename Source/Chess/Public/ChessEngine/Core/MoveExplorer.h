@@ -42,8 +42,10 @@ public:
 
     uint32 Run() override;
     void Stop() override;
-	void EnsureCompletion();
 
     void StartSearch();
+
+private:
+	void DoStop();
     void StopSearch();
 };

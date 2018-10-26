@@ -402,14 +402,14 @@ uint32 FMoveExplorerThread::Run()
 
 void FMoveExplorerThread::Stop()
 {
-    is_killing_ = true;
-    StartSearch(); // breaks out of the loop
+    DoStop();
+    thread_->WaitForCompletion();
 }
 
-void FMoveExplorerThread::EnsureCompletion()
+void FMoveExplorerThread::DoStop()
 {
-    Stop();
-    thread_->WaitForCompletion();
+    is_killing_ = true;
+    StartSearch(); // breaks out of the loop
 }
 
 void FMoveExplorerThread::StartSearch()

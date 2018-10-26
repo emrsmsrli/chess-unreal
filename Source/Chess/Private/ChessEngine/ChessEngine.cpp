@@ -20,7 +20,7 @@ void UChessEngine::Initialize()
 
 void UChessEngine::Shutdown()
 {
-    CEngine->move_explorer_thread_->EnsureCompletion();
+    CEngine->move_explorer_thread_->Stop();
     delete CEngine->move_explorer_thread_;
     delete CEngine->SearchInfo;
     CEngine = nullptr;
