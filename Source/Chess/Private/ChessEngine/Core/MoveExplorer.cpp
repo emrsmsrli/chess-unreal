@@ -14,6 +14,8 @@
 #include "ChessEngine.h"
 #include "Async.h"
 #include "Util/Log.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/World.h"
 
 #ifdef DEBUG
 #include "Verify.h"
@@ -84,13 +86,16 @@ namespace
 
 FMove UMoveExplorer::Search() const
 {
-    LOGI("beginning with depth: %d, time set: %d, null cut: %d", 
-		CEngine->SearchParams.Depth, 
-		CEngine->SearchParams.TimeSet, 
-		CEngine->SearchParams.UseNullCut);
+    LOGI("beginning with depth: %d, time set: %d, null cut: %d",
+        CEngine->SearchParams.Depth,
+        CEngine->SearchParams.TimeSet,
+        CEngine->SearchParams.UseNullCut);
     CEngine->SearchInfo->Clear();
     CEngine->pv_table_->Clear();
     CEngine->board_->ply_ = 0;
+
+    CEngine->SearchInfo->StartTime = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+    CEngine->SearchInfo->StopTimeSet = CEngine->SearchInfo->StartTime + CEngine->SearchParams.TimeSet;
 
     auto best_move = FMove::no_move;
 
@@ -98,7 +103,8 @@ FMove UMoveExplorer::Search() const
     for(auto depth = 1; depth <= CEngine->SearchParams.Depth; ++depth) {
         const auto best_score = AlphaBeta(-INFINITE, INFINITE, depth);
 
-        // out of time check
+        if(CEngine->SearchInfo->bStopRequested)
+            break;
 
         const auto pvmoves = CEngine->pv_table_->GetLine(depth);
         best_move = pvmoves[0];
@@ -118,8 +124,12 @@ FMove UMoveExplorer::Search() const
             CEngine->SearchInfo->F_H_F / CEngine->SearchInfo->F_H);
 #endif
     }
-    
-    LOGI("best move found: %s", *best_move.ToString());
+
+    CEngine->SearchInfo->StopTimeActual = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+    LOGI("best move found: %s, took %f secs, actual-set diff %f secs", *best_move.ToString(),
+        CEngine->SearchInfo->StopTimeActual - CEngine->SearchInfo->StartTime,
+        CEngine->SearchInfo->StopTimeActual - CEngine->SearchInfo->StopTimeSet);
+
     return best_move;
 }
 
@@ -187,6 +197,9 @@ int32 UMoveExplorer::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth
     if(depth == 0)
         return Quiescence(alpha, beta);
 
+    if((CEngine->SearchInfo->TotalVisitedNodes & 2047) == 0)
+        CheckTimeIsUp();
+
     CEngine->SearchInfo->TotalVisitedNodes++;
 
     if(board->fifty_move_counter_ >= 100 || board->HasRepetition())
@@ -223,6 +236,9 @@ int32 UMoveExplorer::AlphaBeta(int32 alpha, const int32 beta, const uint32 depth
         const auto score = -AlphaBeta(-beta, -alpha, depth - 1);
         board->TakeMove();
 
+        if(CEngine->SearchInfo->bStopRequested)
+            return 0;
+
         if(score > alpha) {
             if(score >= beta) {
                 if(legal == 1)
@@ -258,6 +274,9 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
 {
     auto* board = CEngine->board_;
     MAKE_SURE(board->IsOk());
+
+    if((CEngine->SearchInfo->TotalVisitedNodes & 2047) == 0)
+        CheckTimeIsUp();
 
     CEngine->SearchInfo->TotalVisitedNodes++;
 
@@ -298,6 +317,9 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
         const auto score = -Quiescence(-beta, -alpha);
         board->TakeMove();
 
+        if(CEngine->SearchInfo->bStopRequested)
+            return 0;
+
         if(score > alpha) {
             if(score >= beta) {
                 if(legal == 1)
@@ -317,6 +339,15 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
     return alpha;
 }
 
+void UMoveExplorer::CheckTimeIsUp() const
+{
+    if(!CEngine->SearchParams.TimeSet)
+        return;
+    const auto end_time = CEngine->SearchInfo->StartTime + CEngine->SearchParams.TimeSet;
+    if(end_time >= UGameplayStatics::GetRealTimeSeconds(GetWorld()))
+        CEngine->SearchInfo->bStopRequested = true;
+}
+
 FMoveExplorerThread::FMoveExplorerThread()
 {
     LOGI("thread starting");
@@ -332,7 +363,7 @@ FMoveExplorerThread::~FMoveExplorerThread()
         FGenericPlatformProcess::ReturnSynchEventToPool(event_);
         event_ = nullptr;
     }
-   
+
     delete thread_;
 }
 
@@ -347,11 +378,11 @@ uint32 FMoveExplorerThread::Run()
             FPlatformProcess::Sleep(0.01);
 
             const auto best_move = CEngine->move_explorer_->Search();
-			AsyncTask(ENamedThreads::GameThread, [best_move]() -> void
-			{
+            AsyncTask(ENamedThreads::GameThread, [best_move]() -> void
+            {
                 // should be bound by the caller until this point
                 CEngine->MoveFoundDelegate.Execute(best_move);
-			});
+            });
             StopSearch();
         } else {
             event_->Wait();
@@ -360,7 +391,7 @@ uint32 FMoveExplorerThread::Run()
                 break;
         }
     }
-    
+
     LOGI("thread exiting");
     return 0;
 }

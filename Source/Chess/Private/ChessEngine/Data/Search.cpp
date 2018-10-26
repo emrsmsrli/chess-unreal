@@ -30,8 +30,10 @@ uint32 FSearchInfo::GetHistory(const uint32 piece, const uint32 sq)
 
 void FSearchInfo::Clear()
 {
+    bStopRequested = false;
     StartTime = 0;
-    StopTime = 0;
+    StopTimeSet = 0;
+    StopTimeActual = 0;
 
     TotalVisitedNodes = 0;
 

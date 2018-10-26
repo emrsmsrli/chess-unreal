@@ -18,8 +18,8 @@ struct CHESS_API FSearchParams
     int32 Depth = 1;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess|Difficulty", 
-		meta = (ClampMax = 30, ClampMin = -1, ToolTip = "Search will stop after this seconds"))
-    int32 TimeSet = -1;
+		meta = (ClampMax = 30, ClampMin = 0, ToolTip = "Search will stop after this seconds"))
+    float TimeSet = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess|Difficulty", 
 		meta = (ToolTip = "Should the search use null move cut"))
@@ -28,8 +28,11 @@ struct CHESS_API FSearchParams
 
 struct CHESS_API FSearchInfo
 {
-    int32 StartTime = 0;
-    int32 StopTime = 0;
+    float StartTime = 0;
+    float StopTimeSet = 0;
+    float StopTimeActual = 0;
+
+    bool bStopRequested = false;
 
     int64 TotalVisitedNodes = 0;
     
