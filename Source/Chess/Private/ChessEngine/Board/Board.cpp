@@ -17,10 +17,10 @@
 #define HASH_SIDE()         (pos_key_ ^= PosKey::GetSideKey())
 #define HASH_EN_P()         (pos_key_ ^= PosKey::GetPieceKey(EPieceType::empty, en_passant_sq_))
 
-constexpr auto start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
 namespace
 {
+    constexpr auto start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
     const uint32 castle_perm[120] = {
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
