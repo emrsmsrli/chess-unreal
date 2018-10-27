@@ -77,7 +77,6 @@ void UBoard::Reset()
 
 bool UBoard::Set(const FString& fen)
 {
-    LOGI("new fen: %s", *fen);
     Reset();
 
     auto f = *fen;
@@ -191,6 +190,9 @@ bool UBoard::Set(const FString& fen)
 
     pos_key_ = GeneratePositionKey();
     UpdateMaterial();
+
+    LOGI("new fen: %s\n%s", *fen, *ToString());
+
     return true;
 }
 
@@ -588,7 +590,11 @@ void UBoard::ClearPiece(const uint32 sq)
 FString UBoard::ToString() const
 {
     char r[] = ".PNBRQKpnbrqk";
-    FString str;
+
+    FString str = "  ";
+    for(auto file : EFile::All)
+        str += "---";
+
     for(auto rank : ERank::AllReversed) {
         for(auto file : EFile::All) {
             const auto piece = b_[ESquare::Sq120(file, rank)];
@@ -598,9 +604,9 @@ FString UBoard::ToString() const
     }
 
     str += "  ";
-    for(int32 file = EFile::file_a; file <= EFile::file_h; file++)
+    for(auto file : EFile::All)
         str += "---";
-    str += "\n    ";
+
     return str;
 }
 
