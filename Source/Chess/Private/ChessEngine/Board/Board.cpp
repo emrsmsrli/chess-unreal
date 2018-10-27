@@ -509,6 +509,41 @@ bool UBoard::HasRepetition()
     return false;
 }
 
+bool UBoard::HasTrifoldRepetition()
+{
+    auto rep_count = 0;
+    for(auto& h : history)) {
+        if(h.pos_key == pos_key_)
+            rep_count++;
+    }
+    return rep_count >= 2;
+}
+
+bool UBoard::IsDrawByMaterial() 
+{
+    if(piece_locations_[EPieceType::wp].Num() != 0 || 
+      piece_locations_[EPieceType::bp].Num() != 0)
+        return false;
+    if(piece_locations_[EPieceType::wq].Num() != 0 || 
+      piece_locations_[EPieceType::bq].Num() != 0 ||
+      piece_locations_[EPieceType::wr].Num() != 0 || 
+      piece_locations_[EPieceType::br].Num() != 0)
+        return false;
+    if(piece_locations_[EPieceType::wb].Num() > 1 || 
+      piece_locations_[EPieceType::bb].Num() > 1)
+        return false;
+    if(piece_locations_[EPieceType::wn].Num() > 1 || 
+      piece_locations_[EPieceType::bn].Num() > 1)
+        return false;
+    if(piece_locations_[EPieceType::wn].Num() != 0 && 
+      piece_locations_[EPieceType::wb].Num() != 0)
+        return false;
+    if(piece_locations_[EPieceType::bn].Num() != 0 && 
+      piece_locations_[EPieceType::bb].Num() != 0)
+        return false;
+    return true;
+}
+
 void UBoard::AddPiece(const uint32 sq, const uint32 piece)
 {
     MAKE_SURE(Verification::IsSquareOnBoard(sq));

@@ -61,7 +61,12 @@ private:
     uint64 GeneratePositionKey() const;
 
     bool HasRepetition();
+    bool HasTrifoldRepetition();
     bool IsAttacked(uint32 sq, uint8 attacking_side) const;
+
+    // not theoretical. neither player can 
+    // be mated even if they play their best
+    bool IsDrawByMaterial();
 
     void AddPiece(uint32 sq, uint32 piece);
     void MovePiece(uint32 from, uint32 to);
