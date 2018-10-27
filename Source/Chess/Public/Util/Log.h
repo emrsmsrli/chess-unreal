@@ -4,10 +4,8 @@
 
 #ifdef DEBUG
 #include "Chess.h"
-#endif
 
-#ifdef DEBUG
-#define LOGI(f,...) UE_LOG(LogChess, Log, \
+#define LOGI(f, ...) UE_LOG(LogChess, Log, \
     TEXT("[%s] - %s"), *FString(__FUNCTION__), *FString::Printf(TEXT(f), ##__VA_ARGS__))
 
 #define LOGW(f, ...) UE_LOG(LogChess, Warning, \
