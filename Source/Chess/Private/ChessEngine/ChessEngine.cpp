@@ -27,14 +27,14 @@ void UChessEngine::Shutdown()
     CEngine = nullptr;
 }
 
-void UChessEngine::CheckGameOver()
+void UChessEngine::CheckGameOver() const
 {
     if(board_->DoesViolateFiftyMoveRule())
-        ; // fifty move draw
+        UpdateGameStateDelegate.Execute(EGameState::draw, EGameOverReason::fifty_move);
 	else if(board_->HasTrifoldRepetition())
-        ; // trifold draw
+        UpdateGameStateDelegate.Execute(EGameState::draw, EGameOverReason::trifold_repetition);
 	else if(board_->IsDrawByMaterial())
-        ; // material draw
+        UpdateGameStateDelegate.Execute(EGameState::draw, EGameOverReason::insufficent_material);
 	else {
 	    const auto moves = move_generator_->GenerateMoves();
         const auto legal_move = moves.FindByPredicate([&](const FMove& m) -> bool
@@ -44,21 +44,22 @@ void UChessEngine::CheckGameOver()
 
         if(legal_move) {
             board_->TakeMove();
-            return; // do not fire events, game continues!
+            UpdateGameStateDelegate.Execute(EGameState::not_over, EGameOverReason::none);
+            return;
 		}
 
         if(board_->IsInCheck()) {
             switch(board_->GetSide()) {
 			case ESide::white:
-                ; // black mates
+                UpdateGameStateDelegate.Execute(EGameState::mate, EGameOverReason::mate_black);
                 break;
 			case ESide::black:
-                ; // white mates
+                UpdateGameStateDelegate.Execute(EGameState::mate, EGameOverReason::mate_white);
                 break;
 			default:break;
             }
         } else {
-            ; // stalemate draw
+            UpdateGameStateDelegate.Execute(EGameState::draw, EGameOverReason::stalemate);
 		}
 	}
 }
@@ -86,6 +87,7 @@ void UChessEngine::Set(FString& fen) const
 void UChessEngine::MakeMove(FMove& move) const
 {
     board_->MakeMove(move);
+    CheckGameOver();
 }
 
 void UChessEngine::TakeMove() const

@@ -5,6 +5,7 @@
 #include "Object.h"
 #include "Debug.h"
 #include "Search.h"
+#include "EventEnums.h"
 #include "ChessEngine.generated.h"
 
 class UPrincipleVariationTable;
@@ -16,6 +17,7 @@ class UBoard;
 struct FSearchInfo;
 
 DECLARE_DELEGATE_OneParam(FMoveFoundDelegate, FMove)
+DECLARE_DELEGATE_TwoParams(FUpdateGameStateDelegate, EGameState::Type, EGameOverReason::Type)
 
 UCLASS()
 class CHESS_API UChessEngine : public UObject
@@ -38,6 +40,7 @@ public:
     FSearchInfo* SearchInfo;
     FSearchParams SearchParams;
     FMoveFoundDelegate MoveFoundDelegate;
+    FUpdateGameStateDelegate UpdateGameStateDelegate;
 
     UChessEngine();
     void Set(FString& fen) const;
@@ -53,7 +56,7 @@ public:
     static void Shutdown();
 
 private:
-    void CheckGameOver();
+    void CheckGameOver() const;
 
 #ifdef DEBUG
 public:
