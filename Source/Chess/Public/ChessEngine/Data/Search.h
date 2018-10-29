@@ -45,7 +45,7 @@ struct CHESS_API FSearchInfo
 #endif
 
     // heuristics for better move ordering
-    uint32 History[n_pieces][n_board_squares]{};
+    uint32 History[n_pieces][n_board_squares];
     FMove Killers[2][max_depth];
 
     FSearchInfo();

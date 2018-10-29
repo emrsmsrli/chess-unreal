@@ -17,10 +17,10 @@
 #define HASH_SIDE()         (pos_key_ ^= PosKey::GetSideKey())
 #define HASH_EN_P()         (pos_key_ ^= PosKey::GetPieceKey(EPieceType::empty, en_passant_sq_))
 
-constexpr auto start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
 namespace
 {
+    constexpr auto start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
     const uint32 castle_perm[120] = {
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
@@ -77,7 +77,6 @@ void UBoard::Reset()
 
 bool UBoard::Set(const FString& fen)
 {
-    LOGI("new fen: %s", *fen);
     Reset();
 
     auto f = *fen;
@@ -191,6 +190,9 @@ bool UBoard::Set(const FString& fen)
 
     pos_key_ = GeneratePositionKey();
     UpdateMaterial();
+
+    LOGI("new fen: %s\n%s", *fen, *ToString());
+
     return true;
 }
 
@@ -507,6 +509,41 @@ bool UBoard::HasRepetition()
     return false;
 }
 
+bool UBoard::HasTrifoldRepetition()
+{
+    auto rep_count = 0;
+    for(auto& h : history)) {
+        if(h.pos_key == pos_key_)
+            rep_count++;
+    }
+    return rep_count >= 2;
+}
+
+bool UBoard::IsDrawByMaterial() 
+{
+    if(piece_locations_[EPieceType::wp].Num() != 0 || 
+      piece_locations_[EPieceType::bp].Num() != 0)
+        return false;
+    if(piece_locations_[EPieceType::wq].Num() != 0 || 
+      piece_locations_[EPieceType::bq].Num() != 0 ||
+      piece_locations_[EPieceType::wr].Num() != 0 || 
+      piece_locations_[EPieceType::br].Num() != 0)
+        return false;
+    if(piece_locations_[EPieceType::wb].Num() > 1 || 
+      piece_locations_[EPieceType::bb].Num() > 1)
+        return false;
+    if(piece_locations_[EPieceType::wn].Num() > 1 || 
+      piece_locations_[EPieceType::bn].Num() > 1)
+        return false;
+    if(piece_locations_[EPieceType::wn].Num() != 0 && 
+      piece_locations_[EPieceType::wb].Num() != 0)
+        return false;
+    if(piece_locations_[EPieceType::bn].Num() != 0 && 
+      piece_locations_[EPieceType::bb].Num() != 0)
+        return false;
+    return true;
+}
+
 void UBoard::AddPiece(const uint32 sq, const uint32 piece)
 {
     MAKE_SURE(Verification::IsSquareOnBoard(sq));
@@ -588,7 +625,11 @@ void UBoard::ClearPiece(const uint32 sq)
 FString UBoard::ToString() const
 {
     char r[] = ".PNBRQKpnbrqk";
-    FString str;
+
+    FString str = "  ";
+    for(auto file : EFile::All)
+        str += "---";
+
     for(auto rank : ERank::AllReversed) {
         for(auto file : EFile::All) {
             const auto piece = b_[ESquare::Sq120(file, rank)];
@@ -598,9 +639,9 @@ FString UBoard::ToString() const
     }
 
     str += "  ";
-    for(int32 file = EFile::file_a; file <= EFile::file_h; file++)
+    for(auto file : EFile::All)
         str += "---";
-    str += "\n    ";
+
     return str;
 }
 
