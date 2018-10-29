@@ -196,6 +196,11 @@ bool UBoard::Set(const FString& fen)
     return true;
 }
 
+uint8 UBoard::GetSide() const
+{
+    return side_;
+}
+
 uint64 UBoard::GeneratePositionKey() const
 {
     uint64 key = 0;
@@ -438,6 +443,11 @@ void UBoard::TakeMove()
     MAKE_SURE(IsOk());
 }
 
+bool UBoard::IsInCheck()
+{
+    return IsAttacked(king_sq_[side_], side_ ^ 1);
+}
+
 bool UBoard::IsAttacked(const uint32 sq, const uint8 attacking_side) const
 {
     MAKE_SURE(Verification::IsSquareOnBoard(sq));
@@ -509,39 +519,44 @@ bool UBoard::HasRepetition()
     return false;
 }
 
-bool UBoard::HasTrifoldRepetition()
+bool UBoard::IsDrawByMaterial() const
+{
+    if(piece_locations_[EPieceType::wp].Num() != 0 ||
+        piece_locations_[EPieceType::bp].Num() != 0)
+        return false;
+    if(piece_locations_[EPieceType::wq].Num() != 0 ||
+        piece_locations_[EPieceType::bq].Num() != 0 ||
+        piece_locations_[EPieceType::wr].Num() != 0 ||
+        piece_locations_[EPieceType::br].Num() != 0)
+        return false;
+    if(piece_locations_[EPieceType::wb].Num() > 1 ||
+        piece_locations_[EPieceType::bb].Num() > 1)
+        return false;
+    if(piece_locations_[EPieceType::wn].Num() > 1 ||
+        piece_locations_[EPieceType::bn].Num() > 1)
+        return false;
+    if(piece_locations_[EPieceType::wn].Num() != 0 &&
+        piece_locations_[EPieceType::wb].Num() != 0)
+        return false;
+    if(piece_locations_[EPieceType::bn].Num() != 0 &&
+        piece_locations_[EPieceType::bb].Num() != 0)
+        return false;
+    return true;
+}
+
+bool UBoard::HasTrifoldRepetition() const
 {
     auto rep_count = 0;
-    for(auto& h : history)) {
+    for(auto& h : history_) {
         if(h.pos_key == pos_key_)
             rep_count++;
     }
     return rep_count >= 2;
 }
 
-bool UBoard::IsDrawByMaterial() 
+bool UBoard::DoesViolateFiftyMoveRule() const
 {
-    if(piece_locations_[EPieceType::wp].Num() != 0 || 
-      piece_locations_[EPieceType::bp].Num() != 0)
-        return false;
-    if(piece_locations_[EPieceType::wq].Num() != 0 || 
-      piece_locations_[EPieceType::bq].Num() != 0 ||
-      piece_locations_[EPieceType::wr].Num() != 0 || 
-      piece_locations_[EPieceType::br].Num() != 0)
-        return false;
-    if(piece_locations_[EPieceType::wb].Num() > 1 || 
-      piece_locations_[EPieceType::bb].Num() > 1)
-        return false;
-    if(piece_locations_[EPieceType::wn].Num() > 1 || 
-      piece_locations_[EPieceType::bn].Num() > 1)
-        return false;
-    if(piece_locations_[EPieceType::wn].Num() != 0 && 
-      piece_locations_[EPieceType::wb].Num() != 0)
-        return false;
-    if(piece_locations_[EPieceType::bn].Num() != 0 && 
-      piece_locations_[EPieceType::bb].Num() != 0)
-        return false;
-    return true;
+    return fifty_move_counter_ > 100;
 }
 
 void UBoard::AddPiece(const uint32 sq, const uint32 piece)

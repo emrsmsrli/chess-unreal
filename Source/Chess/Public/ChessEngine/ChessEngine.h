@@ -52,7 +52,11 @@ public:
     static void Initialize();
     static void Shutdown();
 
+private:
+    void CheckGameOver();
+
 #ifdef DEBUG
+public:
     FString Perft(int32 depth) const;
 
 private:

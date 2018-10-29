@@ -51,9 +51,17 @@ public:
     UBoard();
 
     bool Set(const FString& fen);
+    uint8 GetSide() const;
 
     bool MakeMove(const FMove& m);
     void TakeMove();
+    bool IsInCheck();
+
+    // not theoretical. neither player can 
+    // be mated even if they play their best
+    bool IsDrawByMaterial() const;
+    bool HasTrifoldRepetition() const;
+    bool DoesViolateFiftyMoveRule() const;
 
 private:
     void Reset();
@@ -61,12 +69,7 @@ private:
     uint64 GeneratePositionKey() const;
 
     bool HasRepetition();
-    bool HasTrifoldRepetition();
     bool IsAttacked(uint32 sq, uint8 attacking_side) const;
-
-    // not theoretical. neither player can 
-    // be mated even if they play their best
-    bool IsDrawByMaterial();
 
     void AddPiece(uint32 sq, uint32 piece);
     void MovePiece(uint32 from, uint32 to);

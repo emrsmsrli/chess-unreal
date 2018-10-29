@@ -294,8 +294,10 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
 
     if(stand_pat > alpha)
         alpha = stand_pat;
-
+    
+#ifdef DEBUG
     uint32 legal = 0;
+#endif
     const auto old_alpha = alpha;
     auto best_move = FMove::no_move;
     auto moves = CEngine->move_generator_->GenerateMoves();
@@ -314,8 +316,10 @@ int32 UMoveExplorer::Quiescence(int32 alpha, const int32 beta) const
     for(auto& move : moves) {
         if(!board->MakeMove(move))
             continue;
-
+        
+#ifdef DEBUG
         legal++;
+#endif
         const auto score = -Quiescence(-beta, -alpha);
         board->TakeMove();
 

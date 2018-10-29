@@ -7,6 +7,7 @@
 #include "Square.h"
 #include "Debug.h"
 #include "Search.h"
+#include "Side.h"
 #include "Util/Log.h"
 
 UChessEngine* CEngine = nullptr;
@@ -24,6 +25,42 @@ void UChessEngine::Shutdown()
     delete CEngine->move_explorer_thread_;
     delete CEngine->SearchInfo;
     CEngine = nullptr;
+}
+
+void UChessEngine::CheckGameOver()
+{
+    if(board_->DoesViolateFiftyMoveRule())
+        ; // fifty move draw
+	else if(board_->HasTrifoldRepetition())
+        ; // trifold draw
+	else if(board_->IsDrawByMaterial())
+        ; // material draw
+	else {
+	    const auto moves = move_generator_->GenerateMoves();
+        const auto legal_move = moves.FindByPredicate([&](const FMove& m) -> bool
+        {
+            return board_->MakeMove(m);
+        });
+
+        if(legal_move) {
+            board_->TakeMove();
+            return; // do not fire events, game continues!
+		}
+
+        if(board_->IsInCheck()) {
+            switch(board_->GetSide()) {
+			case ESide::white:
+                ; // black mates
+                break;
+			case ESide::black:
+                ; // white mates
+                break;
+			default:break;
+            }
+        } else {
+            ; // stalemate draw
+		}
+	}
 }
 
 UChessEngine::UChessEngine()
