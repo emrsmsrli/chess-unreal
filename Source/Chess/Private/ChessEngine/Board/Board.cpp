@@ -202,6 +202,11 @@ uint8 UBoard::GetSide() const
     return side_;
 }
 
+TArray<uint32>* UBoard::GetPieceLocations()
+{
+    return piece_locations_;
+}
+
 uint64 UBoard::GeneratePositionKey() const
 {
     uint64 key = 0;

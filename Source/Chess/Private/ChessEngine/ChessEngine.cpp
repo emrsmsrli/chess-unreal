@@ -115,6 +115,14 @@ void UChessEngine::Search() const
     move_explorer_thread_->StartSearch();
 }
 
+void UChessEngine::GetPieces(const TFunction<void(uint32, uint32)>& on_piece) const
+{
+    const auto* piece_locs = board_->GetPieceLocations(); 
+    for(uint32 piece = 1; piece < n_pieces; ++piece)
+        for(auto sq : piece_locs[piece])
+            on_piece(piece, sq);
+}
+
 #ifdef DEBUG
 void UChessEngine::Perft(const int32 depth, int64* leaf_nodes) const
 {

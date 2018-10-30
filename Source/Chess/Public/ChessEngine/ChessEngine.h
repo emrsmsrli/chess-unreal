@@ -52,6 +52,8 @@ public:
     // void SaveGame();
     // void LoadGame();
 
+    void GetPieces(const TFunction<void(uint32, uint32)>& on_piece) const;
+
     static void Initialize();
     static void Shutdown();
 

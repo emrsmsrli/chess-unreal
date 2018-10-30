@@ -51,7 +51,6 @@ public:
     UBoard();
 
     bool Set(const FString& fen);
-    uint8 GetSide() const;
 
     bool MakeMove(const FMove& m);
     void TakeMove();
@@ -62,6 +61,9 @@ public:
     bool IsDrawByMaterial() const;
     bool HasTrifoldRepetition() const;
     bool DoesViolateFiftyMoveRule() const;
+    
+    uint8 GetSide() const;
+    TArray<uint32>* GetPieceLocations();
 
 private:
     void Reset();
