@@ -135,6 +135,7 @@ bool UBoard::Set(const FString& fen)
             }
 
             default:
+                LOGW("deformed char %c in fen: %s", *f, *fen);
                 return false;
         }
 

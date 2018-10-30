@@ -29,14 +29,17 @@ void UChessEngine::Shutdown()
 
 void UChessEngine::CheckGameOver() const
 {
-    if(board_->DoesViolateFiftyMoveRule())
+    if(board_->DoesViolateFiftyMoveRule()) {
+        LOGI("fifty move draw claimed");
         UpdateGameStateDelegate.Execute(EGameState::draw, EGameOverReason::fifty_move);
-	else if(board_->HasTrifoldRepetition())
+	} else if(board_->HasTrifoldRepetition()) {
+        LOGI("trifold repetition draw claimed");
         UpdateGameStateDelegate.Execute(EGameState::draw, EGameOverReason::trifold_repetition);
-	else if(board_->IsDrawByMaterial())
+    } else if(board_->IsDrawByMaterial()) {
+        LOGI("insufficent material draw claimed");
         UpdateGameStateDelegate.Execute(EGameState::draw, EGameOverReason::insufficent_material);
-	else {
-	    const auto moves = move_generator_->GenerateMoves();
+    } else {
+        const auto moves = move_generator_->GenerateMoves();
         const auto legal_move = moves.FindByPredicate([&](const FMove& m) -> bool
         {
             return board_->MakeMove(m);
@@ -46,22 +49,25 @@ void UChessEngine::CheckGameOver() const
             board_->TakeMove();
             UpdateGameStateDelegate.Execute(EGameState::not_over, EGameOverReason::none);
             return;
-		}
+        }
 
         if(board_->IsInCheck()) {
             switch(board_->GetSide()) {
-			case ESide::white:
-                UpdateGameStateDelegate.Execute(EGameState::mate, EGameOverReason::mate_black);
-                break;
-			case ESide::black:
-                UpdateGameStateDelegate.Execute(EGameState::mate, EGameOverReason::mate_white);
-                break;
-			default:break;
+                case ESide::white:
+                    LOGI("mate claimed for black");
+                    UpdateGameStateDelegate.Execute(EGameState::mate, EGameOverReason::mate_black);
+                    break;
+                case ESide::black:
+                    LOGI("mate claimed for white");
+                    UpdateGameStateDelegate.Execute(EGameState::mate, EGameOverReason::mate_white);
+                    break;
+                default: break;
             }
         } else {
+            LOGI("stalemate draw claimed");
             UpdateGameStateDelegate.Execute(EGameState::draw, EGameOverReason::stalemate);
-		}
-	}
+        }
+    }
 }
 
 UChessEngine::UChessEngine()
@@ -71,7 +77,7 @@ UChessEngine::UChessEngine()
     PosKey::Initialize();
     UMoveGenerator::Initialize();
 
-    board_ = NewObject<UBoard>();   
+    board_ = NewObject<UBoard>();
     move_generator_ = NewObject<UMoveGenerator>();
     move_explorer_ = NewObject<UMoveExplorer>();
     pv_table_ = NewObject<UPrincipleVariationTable>();
@@ -86,6 +92,10 @@ void UChessEngine::Set(FString& fen) const
 
 void UChessEngine::MakeMove(FMove& move) const
 {
+    LOGI("%s making move %s", 
+		*FString(board_->GetSide() == ESide::white ? "white" : "black"), 
+		*move.ToString());
+
     board_->MakeMove(move);
     CheckGameOver();
 }
