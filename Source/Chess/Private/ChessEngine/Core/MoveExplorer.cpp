@@ -419,7 +419,8 @@ void FMoveExplorerThread::DoStop()
 void FMoveExplorerThread::StartSearch()
 {
     is_stopping_search_ = false;
-    event_->Trigger();
+    if(event_)
+        event_->Trigger();
 }
 
 void FMoveExplorerThread::StopSearch()
