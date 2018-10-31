@@ -18,10 +18,10 @@ public:
 private:
     uint32 move_;
     uint32 score_ = 0;
-    explicit FMove(uint32 m);
 
 public:
     FMove() : FMove(0) {}
+    explicit FMove(uint32 m);
 
     uint32 From() const;
     uint32 To() const;
