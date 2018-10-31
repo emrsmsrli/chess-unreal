@@ -10,7 +10,7 @@
 #include "Search.generated.h"
 
 USTRUCT(BlueprintType)
-struct CHESS_API FSearchParams
+struct CHESS_API FMoveSearchParams
 {
     GENERATED_BODY()
 
