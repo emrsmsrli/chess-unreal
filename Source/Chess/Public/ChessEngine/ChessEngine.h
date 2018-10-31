@@ -38,11 +38,12 @@ class CHESS_API UChessEngine : public UObject
 public:
     bool bIsMultiplayer = true;
     FSearchInfo* SearchInfo;
-    FSearchParams SearchParams;
+    FMoveSearchParams SearchParams;
     FMoveFoundDelegate MoveFoundDelegate;
     FUpdateGameStateDelegate UpdateGameStateDelegate;
 
     UChessEngine();
+    ~UChessEngine();
     void Set(FString& fen) const;
 
     void MakeMove(FMove& move) const;

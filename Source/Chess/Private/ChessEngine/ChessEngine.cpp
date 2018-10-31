@@ -21,9 +21,6 @@ void UChessEngine::Initialize()
 
 void UChessEngine::Shutdown()
 {
-    CEngine->move_explorer_thread_->Stop();
-    delete CEngine->move_explorer_thread_;
-    delete CEngine->SearchInfo;
     CEngine = nullptr;
 }
 
@@ -83,6 +80,13 @@ UChessEngine::UChessEngine()
     pv_table_ = NewObject<UPrincipleVariationTable>();
     move_explorer_thread_ = new FMoveExplorerThread();
     SearchInfo = new FSearchInfo();
+}
+
+UChessEngine::~UChessEngine()
+{
+    move_explorer_thread_->Stop();
+    delete move_explorer_thread_;
+    delete SearchInfo;
 }
 
 void UChessEngine::Set(FString& fen) const
