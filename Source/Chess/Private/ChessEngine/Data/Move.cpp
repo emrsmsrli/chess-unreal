@@ -118,6 +118,13 @@ FString FMove::ToString() const
 	return str;
 }
 
+FMoveData FMove::GetMoveData() const
+{
+    FMoveData m;
+    m.Move = move_;
+    return m;
+}
+
 bool FMove::operator==(const FMove& o) const
 {
 	return move_ == o.move_;

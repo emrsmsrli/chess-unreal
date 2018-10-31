@@ -2,9 +2,24 @@
 
 #pragma once
 
-#include "CoreTypes.h"
+#include "ObjectMacros.h"
+#include "Move.generated.h"
 
 class FString;
+
+USTRUCT()
+struct CHESS_API FMoveData
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    int32 Move;
+
+    int32 Destination() const
+    {
+        return Move >> 7 & 0x7F;
+    };
+};
 
 class CHESS_API FMove
 {
@@ -41,6 +56,7 @@ public:
     static FMove Create(uint32 from, uint32 to, uint32 captured, uint32 promoted, uint32 flags);
 
     FString ToString() const;
+    FMoveData GetMoveData() const;
     bool operator==(const FMove& o) const;
     bool operator!=(const FMove& o) const;
 
